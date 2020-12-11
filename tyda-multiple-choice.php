@@ -128,3 +128,17 @@ function questionsGetAnswer($post) {
         return 'Wrong';
     }
 }
+
+add_filter('template_include', 'question_page_template', 11);
+
+function question_page_template($template) {
+    $file_name = 'single-question-template.php';
+    if (is_singular('question')) {
+        if (locate_template($file_name)) {
+            $template = locate_template($file_name);
+        } else {
+            $template = dirname(__FILE__) . '/' . $file_name;
+        }
+    }
+    return $template;
+}
