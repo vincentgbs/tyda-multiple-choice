@@ -17,6 +17,34 @@ function require_parent_plugin(){
     }
 }
 
+function add_question_taxonomy_post_types() {
+    $labels = [
+        'name' => 'Lessons',
+        'singular_name' => 'Lesson',
+        'search_items' => 'Search Lessons',
+        'all_items' => 'All Lessons',
+        'parent_item' => 'Parent Lesson',
+        'parent_item_colon' => 'Parent Lesson:',
+        'edit_item' => 'Edit Lesson',
+        'update_item' => 'Update Lesson',
+        'add_new_item' => 'Add New Lesson',
+        'new_item_name' => 'New Lesson Name',
+        'menu_name' => 'Lesson'
+    ];
+    $args = [
+        'hierarchical' => true,
+        'labels' => $labels,
+        'show_ui' => true,
+        'show_admin_column' => true,
+        'query_var' => true,
+        'rewrite' => [
+            'slug' => 'lessons'
+        ],
+    ];
+    register_taxonomy('lesson', ['question'], $args);
+}
+add_action('init', 'add_question_taxonomy_post_types');
+
 add_action('init', 'add_questions_post_types');
 function add_questions_post_types() {
     register_post_type('question', [
@@ -29,7 +57,7 @@ function add_questions_post_types() {
             'all_items' => 'All Questions',
             'singular_name' => 'Question'
         ],
-        'taxonomies' => ['category', 'post_tag'],
+        // 'taxonomies' => ['category', 'post_tag'],
         'menu_icon' => 'dashicons-edit'
     ]); /* end register_post_type(question) */
 
@@ -134,6 +162,19 @@ add_filter('template_include', 'question_page_template');
 function question_page_template($template) {
     $file_name = 'single-question.php';
     if (is_singular('question')) {
+        if (locate_template($file_name)) {
+            $template = locate_template($file_name);
+        } else {
+            $template = dirname(__FILE__) . '/' . $file_name;
+        }
+    }
+    return $template;
+}
+
+add_filter('template_include', 'lesson_taxonomy_template');
+function lesson_taxonomy_template($template) {
+    $file_name = 'taxonomy-lesson.php';
+    if (is_tax('lesson')) {
         if (locate_template($file_name)) {
             $template = locate_template($file_name);
         } else {
