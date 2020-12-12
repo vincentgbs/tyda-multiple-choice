@@ -7,13 +7,13 @@
   Author: Vincent Hu
   Author URI: https://www.vincenthu.dev
 */
-define( 'QUESTIONS_MAX_WRONG', 5);
-define( 'QUESTIONS_WRONG_TIMER', '1 hour ago');
+define('QUESTIONS_MAX_WRONG', 5);
+define('QUESTIONS_WRONG_TIMER', '1 hour ago');
 
-register_activation_hook(__FILE__, 'require_parent_plugins');
-function require_parent_plugins(){
+register_activation_hook(__FILE__, 'require_parent_plugin');
+function require_parent_plugin(){
     if (!is_plugin_active( 'advanced-custom-fields/acf.php')) {
-        wp_die('Sorry, but this plugin requires the Parent Plugin (ACF) to be installed and active. <br><a href="' . admin_url( 'plugins.php' ) . '">&laquo; Return to Plugins</a>');
+        wp_die('Sorry, but this plugin requires the parent plugin (ACF) to be installed and active. <br><a href="' . admin_url( 'plugins.php' ) . '">&laquo; Return to Plugins</a>');
     }
 }
 
@@ -129,10 +129,9 @@ function questionsGetAnswer($post) {
     }
 }
 
-add_filter('template_include', 'question_page_template', 11);
-
+add_filter('template_include', 'question_page_template');
 function question_page_template($template) {
-    $file_name = 'single-question-template.php';
+    $file_name = 'single-question.php';
     if (is_singular('question')) {
         if (locate_template($file_name)) {
             $template = locate_template($file_name);
