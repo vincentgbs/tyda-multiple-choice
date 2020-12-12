@@ -29,6 +29,7 @@ function add_questions_post_types() {
             'all_items' => 'All Questions',
             'singular_name' => 'Question'
         ],
+        'taxonomies' => ['category', 'post_tag'],
         'menu_icon' => 'dashicons-edit'
     ]); /* end register_post_type(question) */
 
