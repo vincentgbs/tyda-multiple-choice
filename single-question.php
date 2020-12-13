@@ -82,20 +82,7 @@
     if (!is_user_logged_in() || !in_array('student', (array) $user->roles)) {
         die('Only students can view the material');
     }
-    $alreadyAnswered = new WP_Query([
-        'author' => get_current_user_id(),
-        'post_type' => 'correct',
-        'meta_query' => [
-            ['key'      => 'question_id',
-            'compare'   => '=',
-            'value'     => get_the_ID()]
-        ]
-    ]);
-    if ($alreadyAnswered->found_posts > 0) {
-        $questionCompleted = true;
-    } else {
-        $questionCompleted = false;
-    }
+    $thisQuestionId = get_the_ID();
     $cramGuard = new WP_Query([
         'author' => get_current_user_id(),
         'post_type' => 'wrong',
@@ -103,6 +90,40 @@
             'after' => QUESTIONS_WRONG_TIMER
         ]
     ]);
+    wp_reset_postdata();
+    $questionInLesson = new WP_Query([
+        'post_type' => 'question',
+        'tax_query' => array(
+            array(
+                'taxonomy' => 'lesson',
+                'field'    => 'slug',
+                'terms'    => 'introduction',
+            ),
+        ),
+    ]);
+    $total = 0;
+    $answered = 0;
+    $questionCompleted = false;
+    while($questionInLesson->have_posts()) {
+        $questionInLesson->the_post();
+        $alreadyAnswered = new WP_Query([
+            'author' => get_current_user_id(),
+            'post_type' => 'correct',
+            'meta_query' => [
+                ['key'      => 'question_id',
+                'compare'   => '=',
+                'value'     => get_the_ID()]
+            ]
+        ]);
+        $total += 1;
+        if ($alreadyAnswered->found_posts > 0) {
+            $answered += 1;
+            if (get_the_ID() == $thisQuestionId) {
+                $questionCompleted = true; /* this question */
+            }
+        }
+    }
+    wp_reset_postdata();
     while(have_posts()) {
         the_post();
 ?>
@@ -110,17 +131,11 @@
 <div id="flashMessage"></div>
 <div id="questions_body">
     <div id="questions_header">
+        <input type="hidden" id="completed_questions_in_lesson"
+            value="<?php echo $answered; ?>" />
+        <input type="hidden" id="total_questions_in_lesson"
+            value="<?php echo $total; ?>" />
         <div id="questions_remaining_container">
-            <span>⭐<span><!-- Example template -->
-            <span>⭐<span><!-- Example template -->
-            <span>⭐<span><!-- Example template -->
-            <span>⭐<span><!-- Example template -->
-            <span>⭐<span><!-- Example template -->
-            <span>☆<span><!-- Example template -->
-            <span>☆<span><!-- Example template -->
-            <span>☆<span><!-- Example template -->
-            <span>☆<span><!-- Example template -->
-            <span>☆<span><!-- Example template -->
         </div>
         <div id="attempts_remaining_container">
             <span id="attempts_remaining"><?php echo (QUESTIONS_MAX_WRONG - $cramGuard->found_posts); ?></span>
@@ -241,6 +256,17 @@ var question = {
             }, 999);
         }, 999);
     }, /* end decrementAttemptsRemaining() */
+    show_question_status: function() {
+        let display = document.querySelector('#questions_remaining_container');
+        let html = '';
+        for(let i=0; i<document.querySelector('#completed_questions_in_lesson').value; i++) {
+            html += '<span>⭐<span>';
+        }
+        for(let i=document.querySelector('#completed_questions_in_lesson').value; i<document.querySelector('#total_questions_in_lesson').value; i++) {
+            html += '<span>☆<span>';
+        }
+        display.innerHTML = html;
+    },
 }; /* end question var */
 
 document.addEventListener("DOMContentLoaded", function() {
@@ -256,5 +282,6 @@ document.addEventListener("DOMContentLoaded", function() {
     if (document.querySelector('.correct')) {
         question.goToNextQuestion();
     }
+    question.show_question_status();
 });
 </script>
