@@ -122,10 +122,7 @@
             $answered += 1;
             if (get_the_ID() == $thisQuestionId) {
                 $questionCompleted = true; /* this question */
-                // get next question id
             }
-        } else if (get_the_ID() == $thisQuestionId) {
-            // get next question id
         }
     }
     wp_reset_postdata();
