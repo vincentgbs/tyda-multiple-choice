@@ -91,13 +91,15 @@
         ]
     ]);
     wp_reset_postdata();
+    $terms = get_the_terms($thisQuestionId, 'lesson');
+    $lessonName = $terms[0]->slug;
     $questionInLesson = new WP_Query([
         'post_type' => 'question',
         'tax_query' => array(
             array(
                 'taxonomy' => 'lesson',
                 'field'    => 'slug',
-                'terms'    => 'introduction',
+                'terms'    => $lessonName,
             ),
         ),
     ]);
@@ -120,7 +122,10 @@
             $answered += 1;
             if (get_the_ID() == $thisQuestionId) {
                 $questionCompleted = true; /* this question */
+                // get next question id
             }
+        } else if (get_the_ID() == $thisQuestionId) {
+            // get next question id
         }
     }
     wp_reset_postdata();
@@ -175,7 +180,7 @@
         <a href="<?php echo site_url('/archives/question/') . get_field('next_question'); ?>" class="dull_link">
             <div class="continue_button">Next Question</div></a>
         <?php } else { ?>
-            <a href="#" class="dull_link"><div class="continue_button">Return to Lesson</div></a>
+            <a href="<?php echo site_url('/archives/lessons/') . $lessonName; ?>" class="dull_link"><div class="continue_button">Return to Lesson</div></a>
         <?php } /* end else(get_field('next_question') != '') */
         } /* end while(have_posts()) */
         ?>
