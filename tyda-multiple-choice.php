@@ -12,12 +12,16 @@ define('QUESTIONS_WRONG_TIMER', '1 hour ago');
 
 register_activation_hook(__FILE__, 'require_parent_plugin');
 function require_parent_plugin(){
-    if (!is_plugin_active( 'advanced-custom-fields/acf.php')) {
-        wp_die('Sorry, but this plugin requires the parent plugin (ACF) to be installed and active. <br><a href="' . admin_url( 'plugins.php' ) . '">&laquo; Return to Plugins</a>');
+    if (!is_plugin_active('advanced-custom-fields/acf.php')) {
+        wp_die('Sorry, but this plugin requires the parent plugin (advanced custom fields) to be installed and active. <br><a href="' . admin_url('plugins.php') . '">&laquo; Return to Plugins</a>');
+    }
+    if (!is_plugin_active('members/members.php')) {
+        wp_die('Sorry, but this plugin requires the parent plugin (memberpress: members) to be installed and active. <br><a href="' . admin_url('plugins.php') . '">&laquo; Return to Plugins</a>');
     }
 }
 
-function add_question_taxonomy_post_types() {
+add_action('init', 'add_question_taxonomy_types');
+function add_question_taxonomy_types() {
     $labels = [
         'name' => 'Lessons',
         'singular_name' => 'Lesson',
@@ -31,73 +35,72 @@ function add_question_taxonomy_post_types() {
         'new_item_name' => 'New Lesson Name',
         'menu_name' => 'Lesson'
     ];
+    $rewrite = ['slug' => 'lessons'];
     $args = [
         'hierarchical' => true,
         'labels' => $labels,
         'show_ui' => true,
         'show_admin_column' => true,
         'query_var' => true,
-        'rewrite' => [
-            'slug' => 'lessons'
-        ],
+        'rewrite' => $rewrite,
     ];
     register_taxonomy('lesson', ['question'], $args);
-}
-add_action('init', 'add_question_taxonomy_post_types');
+} /* end add_question_taxonomy_types() */
 
 add_action('init', 'add_questions_post_types');
 function add_questions_post_types() {
+    $labels = [
+        'name' => 'Question',
+        'add_new_item' => 'Add New Question',
+        'edit_item' => 'Edit Question',
+        'all_items' => 'All Questions',
+        'singular_name' => 'Question',
+    ];
     register_post_type('question', [
         'supports' => ['title', 'editor'],
         'public' => true,
-        'labels' => [
-            'name' => 'Question',
-            'add_new_item' => 'Add New Question',
-            'edit_item' => 'Edit Question',
-            'all_items' => 'All Questions',
-            'singular_name' => 'Question'
-        ],
-        // 'taxonomies' => ['category', 'post_tag'],
-        'menu_icon' => 'dashicons-edit'
+        'labels' => $labels,
+        'menu_icon' => 'dashicons-edit',
     ]); /* end register_post_type(question) */
 
+    $labels = [
+        'name' => 'Correct',
+        'add_new_item' => 'Add New Correct Answer',
+        'edit_item' => 'Edit Correct Answer',
+        'all_items' => 'All Correct Answers',
+        'singular_name' => 'Correct Answer',
+    ];
     register_post_type('correct', [
         'supports' => ['editor'],
         'public' => true,
-        'labels' => [
-            'name' => 'Correct',
-            'add_new_item' => 'Add New Correct Answer',
-            'edit_item' => 'Edit Correct Answer',
-            'all_items' => 'All Correct Answers',
-            'singular_name' => 'Correct Answer'
-        ],
-        'menu_icon' => 'dashicons-saved'
+        'labels' => $labels,
+        'menu_icon' => 'dashicons-saved',
     ]); /* end register_post_type(correct) */
 
+    $labels = [
+        'name' => 'Wrong',
+        'add_new_item' => 'Add New Wrong Answer',
+        'edit_item' => 'Edit Wrong Answer',
+        'all_items' => 'All Wrong Answers',
+        'singular_name' => 'Wrong Answer',
+    ];
     register_post_type('wrong', [
         'supports' => ['editor'],
         'public' => true,
-        'labels' => [
-            'name' => 'Wrong',
-            'add_new_item' => 'Add New Wrong Answer',
-            'edit_item' => 'Edit Wrong Answer',
-            'all_items' => 'All Wrong Answers',
-            'singular_name' => 'Wrong Answer'
-        ],
-        'menu_icon' => 'dashicons-lock'
+        'labels' => $labels,
+        'menu_icon' => 'dashicons-lock',
     ]); /* end register_post_type(wrong) */
-
 } /* end add_questions_post_types() */
 
 add_action('rest_api_init', 'question_route');
 function question_route() {
     register_rest_route('university/v1', 'answer', [
         'methods' => 'POST',
-        'callback' => 'questionsGetAnswer',
-        'permission_callback' => '__return_true'
+        'callback' => 'questions_get_answer',
+        'permission_callback' => '__return_true',
     ]);
 }
-function questionsGetAnswer($post) {
+function questions_get_answer($post) {
     $user = wp_get_current_user();
     if (!is_user_logged_in() || !in_array('student', (array) $user->roles)) {
         die('Only students can answer a question');
@@ -127,7 +130,7 @@ function questionsGetAnswer($post) {
         ]
     ]);
     if ($cramGuard->found_posts >= QUESTIONS_MAX_WRONG) {
-        die('Take a break, it is better to learn the material slowly');
+        die('Take a break, it is better to learn this material over time');
     }
     $getAnswer = new WP_Query([
         'post_type' => 'question',
@@ -183,3 +186,11 @@ function lesson_taxonomy_template($template) {
     }
     return $template;
 }
+
+// add_action( 'pre_get_posts', 'reorder_question_for_lesson' );
+// function reorder_question_for_lesson( $query ) {
+//   if( (is_category() || is_archive()) && $query->is_main_query() ) {
+//     $query->query_vars['orderby'] = 'name';
+//     $query->query_vars['order'] = 'ASC';
+//   }
+// }

@@ -1,8 +1,17 @@
 <?php
+/*
+ * Template Name: Lesson Template
+ */
+$user = wp_get_current_user();
+if (!is_user_logged_in() || !in_array('student', (array) $user->roles)) {
+    die('Only students can view the material');
+}
 $term = get_term_by('slug', get_query_var('lesson'), get_query_var('taxonomy'));
 ?>
 <h2>Lesson: <?php echo $term->name; ?></h2>
-<?php while (have_posts()) : the_post();
+<?php
+    $displayCount = 1;
+    while (have_posts()) : the_post();
     $alreadyAnswered = new WP_Query([
         'author' => get_current_user_id(),
         'post_type' => 'correct',
@@ -13,8 +22,9 @@ $term = get_term_by('slug', get_query_var('lesson'), get_query_var('taxonomy'));
         ]
     ]);
     if ($alreadyAnswered->found_posts > 0) { ?>
-        <a href="<?php the_permalink(); ?>">Completed</a><br/>
+        <?php echo $displayCount; ?>. <a href="<?php the_permalink(); ?>">Completed</a><br/>
     <?php } else { ?>
-        <a href="<?php the_permalink(); ?>">Unanswered</a><br/>
+        <?php echo $displayCount; ?>. <a href="<?php the_permalink(); ?>">Unanswered</a><br/>
     <?php }
+    $displayCount += 1;
     endwhile; ?>

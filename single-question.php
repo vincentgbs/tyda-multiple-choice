@@ -2,6 +2,10 @@
 /*
  * Template Name: Question Template
  */
+$user = wp_get_current_user();
+if (!is_user_logged_in() || !in_array('student', (array) $user->roles)) {
+    die('Only students can view the material');
+}
 ?>
 <style>
 #flashMessage {
@@ -78,10 +82,6 @@
 </style>
 
 <?php
-    $user = wp_get_current_user();
-    if (!is_user_logged_in() || !in_array('student', (array) $user->roles)) {
-        die('Only students can view the material');
-    }
     $thisQuestionId = get_the_ID();
     $cramGuard = new WP_Query([
         'author' => get_current_user_id(),
