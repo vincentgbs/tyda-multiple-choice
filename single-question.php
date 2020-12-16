@@ -137,16 +137,12 @@ if (!is_user_logged_in() || !in_array('student', (array) $user->roles)) {
             value="<?php echo $answered; ?>" />
         <input type="hidden" id="total_questions_in_lesson"
             value="<?php echo $total; ?>" />
-        <div id="questions_remaining_container">
-        </div>
-        <div id="attempts_remaining_container">
-            <span id="attempts_remaining"><?php echo (QUESTIONS_MAX_WRONG - $cramGuard->found_posts); ?></span>
-            <span>🤍<span><!-- Example template -->
-            <span>🤍<span><!-- Example template -->
-            <span>🤍<span><!-- Example template -->
-            <span>♡<span><!-- Example template -->
-            <span>♡<span><!-- Example template -->
-        </div>
+        <input type="hidden" id="made_attempts"
+            value="<?php echo (QUESTIONS_MAX_WRONG - $cramGuard->found_posts); ?>" />
+        <input type="hidden" id="total_attempts"
+            value="<?php echo QUESTIONS_MAX_WRONG; ?>" />
+        <div id="questions_remaining_container"></div>
+        <div id="attempts_remaining_container"></div>
         <div id="close_container">
             <a href="#" class="dull_link"><button id="close">X</button></a>
         </div>
@@ -266,6 +262,17 @@ var question = {
         }
         for(let i=document.querySelector('#completed_questions_in_lesson').value; i<document.querySelector('#total_questions_in_lesson').value; i++) {
             html += '<span>☆<span>';
+        }
+        display.innerHTML = html;
+    },
+    show_attempt_status: function() {
+        let display = document.querySelector('#attempts_remaining_container');
+        let html = '';
+        for(let i=0; i<document.querySelector('#made_attempts').value; i++) {
+            html += '<span>🤍<span>';
+        }
+        for(let i=document.querySelector('#completed_questions_in_lesson').value; i<document.querySelector('#total_attempts').value; i++) {
+            html += ''<span>♡<span>'';
         }
         display.innerHTML = html;
     },
