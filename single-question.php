@@ -138,7 +138,7 @@ if (!is_user_logged_in() || !in_array('student', (array) $user->roles)) {
         <input type="hidden" id="total_questions_in_lesson"
             value="<?php echo $total; ?>" />
         <input type="hidden" id="made_attempts"
-            value="<?php echo (QUESTIONS_MAX_WRONG - $cramGuard->found_posts); ?>" />
+            value="<?php echo $cramGuard->found_posts; ?>" />
         <input type="hidden" id="total_attempts"
             value="<?php echo QUESTIONS_MAX_WRONG; ?>" />
         <div id="questions_remaining_container"></div>
@@ -269,10 +269,10 @@ var question = {
         let display = document.querySelector('#attempts_remaining_container');
         let html = '';
         for(let i=0; i<document.querySelector('#made_attempts').value; i++) {
-            html += '<span>🤍<span>';
+            html += '<span>♡<span>';
         }
-        for(let i=document.querySelector('#completed_questions_in_lesson').value; i<document.querySelector('#total_attempts').value; i++) {
-            html += ''<span>♡<span>'';
+        for(let i=document.querySelector('#made_attempts').value; i<document.querySelector('#total_attempts').value; i++) {
+            html += '<span>🤍<span>';
         }
         display.innerHTML = html;
     },
@@ -292,5 +292,6 @@ document.addEventListener("DOMContentLoaded", function() {
         question.goToNextQuestion();
     }
     question.show_question_status();
+    question.show_attempt_status();
 });
 </script>
