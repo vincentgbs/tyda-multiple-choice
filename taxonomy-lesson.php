@@ -8,6 +8,24 @@ if (!is_user_logged_in() || !in_array('student', (array) $user->roles)) {
 }
 $term = get_term_by('slug', get_query_var('lesson'), get_query_var('taxonomy'));
 ?>
+<style>
+body {
+    background-color: LightCyan;
+    font-family: Arial, Helvetica, sans-serif;
+}
+.question_button {
+    background-color: MintCream;
+    padding: 1rem;
+    border-style: solid;
+    border-width: thin;
+    border-radius: 1rem;
+    text-align: center;
+}
+.dull_link {
+    text-decoration: none;
+    color: black;
+}
+</style>
 <h2>Lesson: <?php echo $term->name; ?></h2>
 <?php
     $displayCount = 1;
@@ -22,9 +40,15 @@ $term = get_term_by('slug', get_query_var('lesson'), get_query_var('taxonomy'));
         ]
     ]);
     if ($alreadyAnswered->found_posts > 0) { ?>
-        <?php echo $displayCount; ?>. <a href="<?php the_permalink(); ?>">Completed</a><br/>
+        <div class="question_button">
+        <?php echo $displayCount; ?>. <a href="<?php the_permalink(); ?>"
+            class="dull_link">Answered ☑</a><br/>
+        </div>
     <?php } else { ?>
-        <?php echo $displayCount; ?>. <a href="<?php the_permalink(); ?>">Unanswered</a><br/>
+        <div class="question_button">
+        <?php echo $displayCount; ?>. <a href="<?php the_permalink(); ?>"
+            class="dull_link">Question □</a><br/>
+        </div>
     <?php }
     $displayCount += 1;
     endwhile; ?>

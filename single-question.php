@@ -8,6 +8,10 @@ if (!is_user_logged_in() || !in_array('student', (array) $user->roles)) {
 }
 ?>
 <style>
+body {
+    background-color: LightCyan;
+    font-family: Arial, Helvetica, sans-serif;
+}
 #flashMessage {
     text-align: center;
     font-size: 2rem;
@@ -25,6 +29,7 @@ if (!is_user_logged_in() || !in_array('student', (array) $user->roles)) {
     list-style-type: none;
 }
 .question_option {
+    background-color: MintCream;
     margin-left: -2.5rem;
     padding: 1rem;
     border-style: solid;
@@ -74,6 +79,7 @@ if (!is_user_logged_in() || !in_array('student', (array) $user->roles)) {
     width: 2.5rem;
 }
 #questions_content {
+    background-color: MintCream;
     border-style: inset;
     border-width: thin;
     border-radius: 1rem;
@@ -141,7 +147,9 @@ if (!is_user_logged_in() || !in_array('student', (array) $user->roles)) {
             value="<?php echo $cramGuard->found_posts; ?>" />
         <input type="hidden" id="total_attempts"
             value="<?php echo QUESTIONS_MAX_WRONG; ?>" />
-        <div id="questions_remaining_container"></div>
+        <div id="questions_remaining_container">
+            <a href="<?php echo site_url('/archives/lessons/') . $lessonName; ?>" class="dull_link"><div id="questions_remaining"></div></a>
+        </div>
         <div id="attempts_remaining_container"></div>
         <div id="close_container">
             <a href="#" class="dull_link"><button id="close">X</button></a>
@@ -242,26 +250,25 @@ var question = {
         }
     }, /* end goToNextQuestion() */
     decrementAttemptsRemaining: function() {
-        let attempts = document.querySelector('#attempts_remaining')
+        let attempts = document.querySelector('#attempts_remaining_container');
+        document.querySelector('#made_attempts').value = (1 + parseInt(document.querySelector('#made_attempts').value));
         attempts.style.color = 'red';
-        attempts.style['font-weight'] = 'bold';
         setTimeout(function() {
-            attempts.innerText -= 1;
+            question.show_attempt_status();
             setTimeout(function() {
                 question.pause = false;
                 attempts.style.color = 'black';
-                attempts.style['font-weight'] = 'normal';
             }, 999);
         }, 999);
     }, /* end decrementAttemptsRemaining() */
     show_question_status: function() {
-        let display = document.querySelector('#questions_remaining_container');
+        let display = document.querySelector('#questions_remaining');
         let html = '';
         for(let i=0; i<document.querySelector('#completed_questions_in_lesson').value; i++) {
-            html += '<span>⭐<span>';
+            html += '<span>☑<span>';
         }
         for(let i=document.querySelector('#completed_questions_in_lesson').value; i<document.querySelector('#total_questions_in_lesson').value; i++) {
-            html += '<span>☆<span>';
+            html += '<span>□<span>';
         }
         display.innerHTML = html;
     },
@@ -269,10 +276,10 @@ var question = {
         let display = document.querySelector('#attempts_remaining_container');
         let html = '';
         for(let i=0; i<document.querySelector('#made_attempts').value; i++) {
-            html += '<span>♡<span>';
+            html += '<span>ⓧ<span>';
         }
         for(let i=document.querySelector('#made_attempts').value; i<document.querySelector('#total_attempts').value; i++) {
-            html += '<span>🤍<span>';
+            html += '<span>ⓞ<span>';
         }
         display.innerHTML = html;
     },
