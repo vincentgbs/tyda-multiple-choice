@@ -25,32 +25,23 @@ body {
     color: black;
 }
 </style>
+<h2>Lesson: <?php echo ucfirst(get_query_var('lesson')); ?></h2>
 <?php
-$term = get_term_by('slug', get_query_var('lesson'), get_query_var('taxonomy'));
+$displayCounter = 1;
+while (have_posts()) {
+    the_post();
+    if (alreadyAnswered(get_the_ID())) {
 ?>
-<h2>Lesson: <?php echo $term->name; ?></h2>
-<?php
-    $displayCount = 1;
-    while (have_posts()) : the_post();
-    $alreadyAnswered = new WP_Query([
-        'author' => get_current_user_id(),
-        'post_type' => 'correct',
-        'meta_query' => [
-            ['key'      => 'question_id',
-            'compare'   => '=',
-            'value'     => get_the_ID()]
-        ]
-    ]);
-    if ($alreadyAnswered->found_posts > 0) { ?>
-        <div class="question_button">
-        <?php echo $displayCount; ?>. <a href="<?php the_permalink(); ?>"
-            class="dull_link">Answered ☑</a><br/>
-        </div>
-    <?php } else { ?>
-        <div class="question_button">
-        <?php echo $displayCount; ?>. <a href="<?php the_permalink(); ?>"
-            class="dull_link">Question □</a><br/>
-        </div>
-    <?php }
-    $displayCount += 1;
-    endwhile; ?>
+    <div class="question_button">
+        <?php echo $displayCounter; ?>. <a href="<?php the_permalink(); ?>"
+        class="dull_link">Complete ☑</a><br/>
+    </div>
+<?php   } else {  /* if (alreadyAnswered(get_the_ID())) */ ?>
+    <div class="question_button">
+        <?php echo $displayCounter; ?>. <a href="<?php the_permalink(); ?>"
+        class="dull_link">Unanswered □</a><br/>
+    </div>
+<?php   } /* end else (alreadyAnswered(get_the_ID())) */
+    $displayCounter += 1;
+}
+?>

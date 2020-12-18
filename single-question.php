@@ -30,6 +30,55 @@ if (!is_user_logged_in() || !in_array('student', (array) $user->roles)) {
 //     }
 // }
 
+$thisQuestionId = get_the_ID();
+$attemptsRemaining = new WP_Query([
+    'author' => get_current_user_id(),
+    'post_type' => 'wrong',
+    'date_query' => [
+        'after' => QUESTIONS_WRONG_TIMER
+    ]
+]);
+wp_reset_postdata();
+$terms = get_the_terms($thisQuestionId, 'lesson');
+$lessonName = $terms[0]->slug;
+$questionInLesson = new WP_Query([
+    'post_type' => 'question',
+    'tax_query' => array(
+        array(
+            'taxonomy' => 'lesson',
+            'field'    => 'slug',
+            'terms'    => $lessonName,
+        ),
+    ),
+    'orderby' => 'meta_value_num',
+    'order' => 'ASC',
+]);
+$total = 0;
+$answered = 0;
+$questionCompleted = false;
+$tempIndex = 0;
+$arrayOfQuestionIds = []; /* holds all ids of question lesson in order */
+while($questionInLesson->have_posts()) {
+    $questionInLesson->the_post();
+    $total += 1;
+    $thisQuestionAnswered = false;
+    if (alreadyAnswered(get_the_ID())) {
+        $answered += 1;
+        $thisQuestionAnswered = true;
+    }
+    $tempQuestionId = get_the_ID();
+    if ($tempQuestionId == $thisQuestionId) {
+        if ($thisQuestionAnswered) {
+            $questionCompleted = true; /* this question */
+        }
+        $indexOfThisQuestion = $tempIndex;
+    }
+    $arrayOfQuestionIds[] = $tempQuestionId;
+    $tempIndex += 1;
+}
+wp_reset_postdata();
+while(have_posts()) {
+    the_post();
 ?>
 <style>
 body {
@@ -125,59 +174,6 @@ body {
     display: flex;
 }
 </style>
-
-<?php
-    $thisQuestionId = get_the_ID();
-    $cramGuard = new WP_Query([
-        'author' => get_current_user_id(),
-        'post_type' => 'wrong',
-        'date_query' => [
-            'after' => QUESTIONS_WRONG_TIMER
-        ]
-    ]);
-    wp_reset_postdata();
-    $terms = get_the_terms($thisQuestionId, 'lesson');
-    $lessonName = $terms[0]->slug;
-    $questionInLesson = new WP_Query([
-        'post_type' => 'question',
-        'tax_query' => array(
-            array(
-                'taxonomy' => 'lesson',
-                'field'    => 'slug',
-                'terms'    => $lessonName,
-            ),
-        ),
-        'orderby' => 'meta_value_num',
-        'order' => 'ASC',
-    ]);
-    $total = 0;
-    $answered = 0;
-    $questionCompleted = false;
-    $tempIndex = 0;
-    $arrayOfQuestionIds = []; /* holds all ids of question lesson in order */
-    while($questionInLesson->have_posts()) {
-        $questionInLesson->the_post();
-        $total += 1;
-        $thisQuestionAnswered = false;
-        if (alreadyAnswered(get_the_ID())) {
-            $answered += 1;
-            $thisQuestionAnswered = true;
-        }
-        $tempQuestionId = get_the_ID();
-        if ($tempQuestionId == $thisQuestionId) {
-            if ($thisQuestionAnswered) {
-                $questionCompleted = true; /* this question */
-            }
-            $indexOfThisQuestion = $tempIndex;
-        }
-        $arrayOfQuestionIds[] = $tempQuestionId;
-        $tempIndex += 1;
-    }
-    wp_reset_postdata();
-    while(have_posts()) {
-        the_post();
-?>
-
 <div id="flashMessage"></div>
 <div id="questions_body">
     <div id="questions_header">
@@ -187,7 +183,7 @@ body {
             <input type="hidden" id="total_questions_in_lesson"
                 value="<?php echo $total; ?>" />
             <input type="hidden" id="made_attempts"
-                value="<?php echo $cramGuard->found_posts; ?>" />
+                value="<?php echo $attemptsRemaining->found_posts; ?>" />
             <input type="hidden" id="total_attempts"
                 value="<?php echo QUESTIONS_MAX_WRONG; ?>" />
             <div id="lesson_name_container"><?php echo ucfirst($lessonName);
