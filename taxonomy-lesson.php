@@ -18,7 +18,7 @@ body {
 }
 .question_option {
     background-color: MintCream;
-    margin: .2rem 1rem;
+    margin: .2rem 0;
     padding: 1rem;
     border-style: solid;
     border-width: thin;

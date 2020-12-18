@@ -103,11 +103,12 @@ body {
 }
 .question_option {
     background-color: MintCream;
-    margin-left: -2.5rem;
+    margin: .2rem 0;
     padding: 1rem;
     border-style: solid;
     border-width: thin;
     border-radius: 1rem;
+    text-align: center;
 }
 .correct {
     background-color: MediumSeaGreen;
@@ -204,22 +205,22 @@ body {
         <p><?php the_content(); ?></p>
     </div>
     <div id="questions_options">
-        <ul class="question_options_list">
+        <div class="question_options_list">
             <?php
                 $keys = ['option1', 'option2', 'option3', 'answer'];
                 shuffle($keys);
                 foreach ($keys as $key=>$value) {
                     if(get_field($value)) {
             ?>
-                    <li class="question_option<?php
+                    <div class="question_option<?php
                         if ($questionCompleted && $value == 'answer')
                             { echo ' correct'; }
-                    ?>"><?php echo get_field($value); ?></li>
+                    ?>"><?php echo get_field($value); ?></div>
             <?php
                     }
                 } /* end foreach */
             ?>
-        </ul>
+        </div>
     </div>
     <div id="questions_footer">
         <?php
