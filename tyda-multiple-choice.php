@@ -103,12 +103,12 @@ function question_route() {
 function questions_get_answer($post) {
     $user = wp_get_current_user();
     if (!is_user_logged_in() || !in_array('student', (array) $user->roles)) {
-        die('Only students can answer a question');
+        return ['status'=>'error', 'message'=>'Only students can answer a question'];
     }
     $questionId = preg_replace('/\D/', '', sanitize_text_field($post['questionId']));
     $answer = sanitize_text_field($post['answer']);
     if (get_post_type($questionId) != 'question') {
-        die('Invalid questionId: ' . $questionId);
+        return ['status'=>'error', 'message'=>'Invalid questionId: ' . $questionId];
     }
     $alreadyAnswered = new WP_Query([
         'author' => get_current_user_id(),
@@ -120,7 +120,7 @@ function questions_get_answer($post) {
         ]
     ]);
     if ($alreadyAnswered->found_posts > 0) {
-        die('Done'); /* You already answered this question correctly */
+        return ['status'=>'Done', 'message'=>'Done'];
     }
     $cramGuard = new WP_Query([
         'author' => get_current_user_id(),
@@ -130,7 +130,7 @@ function questions_get_answer($post) {
         ]
     ]);
     if ($cramGuard->found_posts >= QUESTIONS_MAX_WRONG) {
-        die('Take a break, it is better to learn this material over time');
+        return ['status'=>'error', 'message'=>'Take a break, it is better to learn this material over time'];
     }
     $getAnswer = new WP_Query([
         'post_type' => 'question',
@@ -148,7 +148,7 @@ function questions_get_answer($post) {
                 'question_id' => $questionId,
             ]
         ]);
-        return 'Correct';
+        return ['status'=>'Correct', 'message'=>'test'];
     } else {
         wp_insert_post([
             'post_type' => 'wrong',
@@ -157,7 +157,7 @@ function questions_get_answer($post) {
                 'question_id' => $questionId,
             ]
         ]);
-        return 'Wrong';
+        return ['status'=>'Wrong', 'message'=>'test'];
     }
 }
 

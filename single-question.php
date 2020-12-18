@@ -238,16 +238,21 @@ var question = {
             xhr.setRequestHeader('X-WP-Nonce', '<?php echo wp_create_nonce('wp_rest'); ?>');
             xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
             xhr.onload = function () {
-                if (xhr.response == 'Done') {
-                    question.goToNextQuestion();
-                } else if (xhr.response == '"Correct"') {
-                    answer.classList.add('correct');
-                    question.goToNextQuestion();
-                } else if (xhr.response == '"Wrong"') {
-                    answer.classList.add('wrong');
-                    question.decrementAttemptsRemaining();
-                } else {
-                    question.flashMessage(xhr.response, 9999);
+                try {
+                    let response = JSON.parse(xhr.response);
+                    if (response['status'] == 'Done') {
+                        // continue
+                    } else if (response['status'] == 'Correct') {
+                        answer.classList.add('correct');
+                        // question.incrementQuestionsAnswered();
+                    } else if (response['status'] == 'Wrong') {
+                        answer.classList.add('wrong');
+                        question.decrementAttemptsRemaining();
+                    } else {
+                        question.flashMessage(response['message'], 9999);
+                    }
+                } catch {
+                    console.debug(xhr.response);
                 }
             }; /* end xhr.onload */
             try {
