@@ -191,20 +191,32 @@ body {
         </ul>
     </div>
     <div id="questions_footer">
-        <?php if (get_field('next_question') == 'none') { ?>
-            <div class="continue_button"><a href="<?php echo site_url('/archives/lessons/') . $lessonName; ?>" class="dull_link"><div>⇦</div></a></div>
-            <div class="continue_button">⇨</div>
-        <?php } else if (get_field('next_question') != '') { ?>
-            <div class="continue_button"><a href="<?php echo site_url('/archives/question/') . get_field('next_question'); ?>" class="dull_link"><div>⇦</div></a></div>
-            <div class="continue_button">⇨</div>
-        <?php } else {
-            $nextQuestion = $arrayOfQuestionIds[$indexOfThisQuestion + 1];
-        ?>
-            <div class="continue_button"><a href="<?php echo site_url('/archives/question/') . $nextQuestion; ?>" class="dull_link"><div>⇦</div></a></div>
-            <div class="continue_button">⇨</div>
-        <?php } /* end else(get_field('next_question') != '') */
+        <?php
+            if (get_field('next_question') == 'none') {
+                $nextLink = site_url('/archives/lessons/') . $lessonName;
+            } else if (get_field('next_question') != '') {
+                $nextLink = site_url('/archives/question/') . get_field('next_question');
+            } else {
+                $nextQuestion = $arrayOfQuestionIds[($indexOfThisQuestion + 1) % count($arrayOfQuestionIds)];
+                $nextLink = site_url('/archives/question/') . $nextQuestion;
+            } /* end else(get_field('next_question') != '') */
+            if (get_field('previous_question') == 'none') {
+                $prevLink = site_url('/archives/lessons/') . $lessonName;
+            } else if (get_field('previous_question') != '') {
+                $prevLink = site_url('/archives/question/') . get_field('next_question');
+            } else {
+                if ($indexOfThisQuestion - 1 < 0) {
+                    $lastQuestion = $arrayOfQuestionIds[count($arrayOfQuestionIds) - 1];
+                    $prevLink = site_url('/archives/question/') . $lastQuestion;
+                } else {
+                    $lastQuestion = $arrayOfQuestionIds[$indexOfThisQuestion - 1];
+                    $prevLink = site_url('/archives/question/') . $lastQuestion;
+                }
+            } /* end else(get_field('next_question') != '') */
         } /* end while(have_posts()) */
         ?>
+        <div class="continue_button"><a href="<?php echo $prevLink; ?>" class="dull_link"><div>⇦</div></a></div>
+        <div class="continue_button"><a href="<?php echo $nextLink; ?>" class="dull_link"><div>⇨</div></a></div>
     </div>
 </div>
 
