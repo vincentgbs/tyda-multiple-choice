@@ -44,7 +44,7 @@ body {
 }
 .continue_button {
     background-color: MediumTurquoise;
-    width: 100%;
+    width: 49%;
     height: 2.5rem;
     border-style: solid;
     border-width: thin;
@@ -83,6 +83,9 @@ body {
     border-width: thin;
     border-radius: 1rem;
     min-height: 7.5rem;
+}
+#questions_footer {
+    display: flex;
 }
 </style>
 
@@ -189,17 +192,16 @@ body {
     </div>
     <div id="questions_footer">
         <?php if (get_field('next_question') == 'none') { ?>
-            <a href="<?php echo site_url('/archives/lessons/') . $lessonName; ?>" class="dull_link"><div class="continue_button">⇦</div></a>
-        <?php } else if (get_field('next_question') != '') { ?>
-        <a href="<?php echo site_url('/archives/question/') . get_field('next_question'); ?>" class="dull_link">
+            <div class="continue_button"><a href="<?php echo site_url('/archives/lessons/') . $lessonName; ?>" class="dull_link"><div>⇦</div></a></div>
             <div class="continue_button">⇨</div>
-        </a>
+        <?php } else if (get_field('next_question') != '') { ?>
+            <div class="continue_button"><a href="<?php echo site_url('/archives/question/') . get_field('next_question'); ?>" class="dull_link"><div>⇦</div></a></div>
+            <div class="continue_button">⇨</div>
         <?php } else {
             $nextQuestion = $arrayOfQuestionIds[$indexOfThisQuestion + 1];
         ?>
-            <a href="<?php echo site_url('/archives/question/') . $nextQuestion; ?>" class="dull_link">
-                <div class="continue_button">⇨</div>
-            </a>
+            <div class="continue_button"><a href="<?php echo site_url('/archives/question/') . $nextQuestion; ?>" class="dull_link"><div>⇦</div></a></div>
+            <div class="continue_button">⇨</div>
         <?php } /* end else(get_field('next_question') != '') */
         } /* end while(have_posts()) */
         ?>
