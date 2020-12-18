@@ -12,36 +12,34 @@ body {
     background-color: LightCyan;
     font-family: Arial, Helvetica, sans-serif;
 }
-.question_button {
+.dull_link {
+    text-decoration: none;
+    color: black;
+}
+.question_option {
     background-color: MintCream;
+    margin: .2rem 1rem;
     padding: 1rem;
     border-style: solid;
     border-width: thin;
     border-radius: 1rem;
     text-align: center;
 }
-.dull_link {
-    text-decoration: none;
-    color: black;
-}
 </style>
 <h2>Lesson: <?php echo ucfirst(get_query_var('lesson')); ?></h2>
 <?php
-$displayCounter = 1;
+$displayCounter = 0;
 while (have_posts()) {
     the_post();
+    $displayCounter++;
     if (alreadyAnswered(get_the_ID())) {
+        $displayText = 'Completed ☑';
+    } else {
+        $displayText = 'Unanswered □';
+    }
 ?>
-    <div class="question_button">
+    <div class="question_option">
         <?php echo $displayCounter; ?>. <a href="<?php the_permalink(); ?>"
-        class="dull_link">Complete ☑</a><br/>
+        class="dull_link"><?php echo $displayText; ?></a><br/>
     </div>
-<?php   } else {  /* if (alreadyAnswered(get_the_ID())) */ ?>
-    <div class="question_button">
-        <?php echo $displayCounter; ?>. <a href="<?php the_permalink(); ?>"
-        class="dull_link">Unanswered □</a><br/>
-    </div>
-<?php   } /* end else (alreadyAnswered(get_the_ID())) */
-    $displayCounter += 1;
-}
-?>
+<?php } /* end while loop */ ?>
