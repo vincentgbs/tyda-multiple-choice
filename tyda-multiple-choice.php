@@ -189,7 +189,7 @@ function lesson_taxonomy_template($template) {
 
 add_action( 'pre_get_posts', 'reorder_question_for_lesson' );
 function reorder_question_for_lesson($query) {
-    if( (is_category() || is_archive()) && $query->is_main_query() ) {
+    if(is_tax('lesson')) {
         $query->query_vars['orderby'] = 'meta_value_num';
         $query->query_vars['order'] = 'ASC';
     }

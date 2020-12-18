@@ -107,6 +107,8 @@ body {
                 'terms'    => $lessonName,
             ),
         ),
+        'orderby' => 'meta_value_num',
+        'order' => 'ASC',
     ]);
     $total = 0;
     $answered = 0;
