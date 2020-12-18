@@ -7,38 +7,7 @@ if (!is_user_logged_in() || !in_array('student', (array) $user->roles)) {
     die('Only students can view material <a href="' . site_url() . '/wp-login.php">Return to home</a>');
 }
 
-// function getContinueUrl($dataArray) {
-//     $field = $dataArray['field'];
-//     $lessonName = $dataArray['lessonName'];
-//     $arrayOfQuestionIds = $dataArray['arrayOfQuestionIds'];
-//     if (get_field($field) == 'none') {
-//         return site_url('/archives/lessons/') . $lessonName;
-//     } else if (get_field($field) != '') {
-//         return site_url('/archives/question/') . get_field('next_question');
-//     } else {
-//         if ($field == 'next_question') {
-//             //
-//         } else if ($field == 'previous_question') {
-//             if ($indexOfThisQuestion - 1 < 0) {
-//                 $continueQuestion = $arrayOfQuestionIds[count($arrayOfQuestionIds) - 1];
-//                 $prevLink = site_url('/archives/question/') . $continueQuestion;
-//             } else {
-//                 $continueQuestion = $arrayOfQuestionIds[($indexOfThisQuestion - 1) % count($arrayOfQuestionIds)];
-//                 $prevLink = site_url('/archives/question/') . $continueQuestion;
-//             }
-//         }
-//     }
-// }
-
 $thisQuestionId = get_the_ID();
-$attemptsRemaining = new WP_Query([
-    'author' => get_current_user_id(),
-    'post_type' => 'wrong',
-    'date_query' => [
-        'after' => QUESTIONS_WRONG_TIMER
-    ]
-]);
-wp_reset_postdata();
 $terms = get_the_terms($thisQuestionId, 'lesson');
 $lessonName = $terms[0]->slug;
 $questionInLesson = new WP_Query([
@@ -184,7 +153,7 @@ body {
             <input type="hidden" id="total_questions_in_lesson"
                 value="<?php echo $total; ?>" />
             <input type="hidden" id="made_attempts"
-                value="<?php echo $attemptsRemaining->found_posts; ?>" />
+                value="<?php echo getAttempts(); ?>" />
             <input type="hidden" id="total_attempts"
                 value="<?php echo QUESTIONS_MAX_WRONG; ?>" />
             <div id="lesson_name_container"><?php echo ucfirst($lessonName);

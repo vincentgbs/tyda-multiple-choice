@@ -118,6 +118,19 @@ function alreadyAnswered($questionId, $userId=false) {
     }
     return false;
 }
+function getAttempts($userId=false) {
+    if (!$userId) {
+        $userId = get_current_user_id();
+    }
+    $getAttempts = new WP_Query([
+        'author' => $userId,
+        'post_type' => 'wrong',
+        'date_query' => [
+            'after' => QUESTIONS_WRONG_TIMER
+        ]
+    ]);
+    return $getAttempts->found_posts;
+}
 function questions_get_answer($post) {
     $user = wp_get_current_user();
     if (!is_user_logged_in() || !in_array('student', (array) $user->roles)) {
@@ -137,14 +150,7 @@ function questions_get_answer($post) {
     if (alreadyAnswered($questionId)) {
         return ['status'=>'Done', 'message'=>'Done'];
     }
-    $getAttempts = new WP_Query([
-        'author' => get_current_user_id(),
-        'post_type' => 'wrong',
-        'date_query' => [
-            'after' => QUESTIONS_WRONG_TIMER
-        ]
-    ]);
-    if ($getAttempts->found_posts >= QUESTIONS_MAX_WRONG) {
+    if (getAttempts() >= QUESTIONS_MAX_WRONG) {
         return [
             'status'=>'error',
             'message'=>'Take a break, it is better to learn this material over time'
