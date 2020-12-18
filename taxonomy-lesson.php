@@ -4,7 +4,7 @@
  */
 $user = wp_get_current_user();
 if (!is_user_logged_in() || !in_array('student', (array) $user->roles)) {
-    die('Only students can view material <a href="' . site_url(). '">Return to home</a>');
+    die('Only students can view material <a href="' . site_url() . '/wp-login.php">Return to home</a>');
 }
 ?>
 <style>

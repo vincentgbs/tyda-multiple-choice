@@ -4,8 +4,32 @@
  */
 $user = wp_get_current_user();
 if (!is_user_logged_in() || !in_array('student', (array) $user->roles)) {
-    die('Only students can view material <a href="' . site_url(). '">Return to home</a>');
+    die('Only students can view material <a href="' . site_url() . '/wp-login.php">Return to home</a>');
 }
+
+function getContinueUrl($dataArray) {
+    $field = $dataArray['field'];
+    $lessonName = $dataArray['lessonName'];
+    $arrayOfQuestionIds = $dataArray['arrayOfQuestionIds'];
+    if (get_field($field) == 'none') {
+        return site_url('/archives/lessons/') . $lessonName;
+    } else if (get_field($field) != '') {
+        return site_url('/archives/question/') . get_field('next_question');
+    } else {
+        if ($field == 'next_question') {
+            //
+        } else if ($field == 'previous_question') {
+            if ($indexOfThisQuestion - 1 < 0) {
+                $continueQuestion = $arrayOfQuestionIds[count($arrayOfQuestionIds) - 1];
+                $prevLink = site_url('/archives/question/') . $continueQuestion;
+            } else {
+                $continueQuestion = $arrayOfQuestionIds[($indexOfThisQuestion - 1) % count($arrayOfQuestionIds)];
+                $prevLink = site_url('/archives/question/') . $continueQuestion;
+            }
+        }
+    }
+}
+
 ?>
 <style>
 body {
@@ -120,18 +144,9 @@ body {
     $arrayOfQuestionIds = []; /* holds all ids of question lesson in order */
     while($questionInLesson->have_posts()) {
         $questionInLesson->the_post();
-        $alreadyAnswered = new WP_Query([
-            'author' => get_current_user_id(),
-            'post_type' => 'correct',
-            'meta_query' => [
-                ['key'      => 'question_id',
-                'compare'   => '=',
-                'value'     => get_the_ID()]
-            ]
-        ]);
         $total += 1;
         $thisQuestionAnswered = false;
-        if ($alreadyAnswered->found_posts > 0) {
+        if (alreadyAnswered(get_the_ID())) {
             $answered += 1;
             $thisQuestionAnswered = true;
         }
@@ -163,6 +178,7 @@ body {
             value="<?php echo QUESTIONS_MAX_WRONG; ?>" />
         <div id="questions_remaining_container">
             <a href="<?php echo site_url('/archives/lessons/') . $lessonName; ?>" class="dull_link"><div id="questions_remaining"></div></a>
+            ↺
         </div>
         <div id="attempts_remaining_container"></div>
         <div id="close_container">
@@ -212,7 +228,7 @@ body {
                     $lastQuestion = $arrayOfQuestionIds[$indexOfThisQuestion - 1];
                     $prevLink = site_url('/archives/question/') . $lastQuestion;
                 }
-            } /* end else(get_field('next_question') != '') */
+            } /* end else(get_field('previous_question') != '') */
         } /* end while(have_posts()) */
         ?>
         <div class="continue_button"><a href="<?php echo $prevLink; ?>" class="dull_link"><div>⇦</div></a></div>
@@ -255,7 +271,7 @@ var question = {
                 try {
                     let response = JSON.parse(xhr.response);
                     if (response['status'] == 'Done') {
-                        // continue
+                        console.log('Done'); // continue
                     } else if (response['status'] == 'Correct') {
                         answer.classList.add('correct');
                         // question.incrementQuestionsAnswered();

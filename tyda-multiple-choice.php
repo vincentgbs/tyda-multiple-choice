@@ -100,18 +100,12 @@ function question_route() {
         'permission_callback' => '__return_true',
     ]);
 }
-function questions_get_answer($post) {
-    $user = wp_get_current_user();
-    if (!is_user_logged_in() || !in_array('student', (array) $user->roles)) {
-        return ['status'=>'error', 'message'=>'Only students can answer a question'];
-    }
-    $questionId = preg_replace('/\D/', '', sanitize_text_field($post['questionId']));
-    $answer = sanitize_text_field($post['answer']);
-    if (get_post_type($questionId) != 'question') {
-        return ['status'=>'error', 'message'=>'Invalid questionId: ' . $questionId];
+function alreadyAnswered($questionId, $userId=false) {
+    if (!$userId) {
+        $userId = get_current_user_id();
     }
     $alreadyAnswered = new WP_Query([
-        'author' => get_current_user_id(),
+        'author' => $userId,
         'post_type' => 'correct',
         'meta_query' => [
             ['key'      => 'question_id',
@@ -120,22 +114,47 @@ function questions_get_answer($post) {
         ]
     ]);
     if ($alreadyAnswered->found_posts > 0) {
+        return true;
+    }
+    return false;
+}
+function questions_get_answer($post) {
+    $user = wp_get_current_user();
+    if (!is_user_logged_in() || !in_array('student', (array) $user->roles)) {
+        return [
+            'status'=>'error',
+            'message'=>'Only students can answer a question'
+        ];
+    }
+    $questionId = preg_replace('/\D/', '', sanitize_text_field($post['questionId']));
+    $answer = sanitize_text_field($post['answer']);
+    if (get_post_type($questionId) != 'question') {
+        return [
+            'status'=>'error',
+            'message'=>'Invalid questionId: ' . $questionId
+        ];
+    }
+    if (alreadyAnswered($questionId)) {
         return ['status'=>'Done', 'message'=>'Done'];
     }
-    $cramGuard = new WP_Query([
+    $getAttempts = new WP_Query([
         'author' => get_current_user_id(),
         'post_type' => 'wrong',
         'date_query' => [
             'after' => QUESTIONS_WRONG_TIMER
         ]
     ]);
-    if ($cramGuard->found_posts >= QUESTIONS_MAX_WRONG) {
-        return ['status'=>'error', 'message'=>'Take a break, it is better to learn this material over time'];
+    if ($getAttempts->found_posts >= QUESTIONS_MAX_WRONG) {
+        return [
+            'status'=>'error',
+            'message'=>'Take a break, it is better to learn this material over time'
+        ];
     }
     $getAnswer = new WP_Query([
         'post_type' => 'question',
         'p' => $questionId
     ]);
+    // var_dump($getAnswer[0]);
     while($getAnswer->have_posts()) {
         $getAnswer->the_post();
         $correctAnswer = get_field('answer');
@@ -159,7 +178,7 @@ function questions_get_answer($post) {
         ]);
         return ['status'=>'Wrong', 'message'=>'test'];
     }
-}
+}  /* end questions_get_answer($post) */
 
 add_filter('template_include', 'question_page_template');
 function question_page_template($template) {
@@ -187,7 +206,7 @@ function lesson_taxonomy_template($template) {
     return $template;
 }
 
-add_action( 'pre_get_posts', 'reorder_question_for_lesson' );
+add_action('pre_get_posts', 'reorder_question_for_lesson');
 function reorder_question_for_lesson($query) {
     if(is_tax('lesson')) {
         $query->query_vars['orderby'] = 'meta_value_num';
