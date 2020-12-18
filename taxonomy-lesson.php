@@ -4,9 +4,8 @@
  */
 $user = wp_get_current_user();
 if (!is_user_logged_in() || !in_array('student', (array) $user->roles)) {
-    die('Only students can view the material');
+    die('Only students can view material <a href="' . site_url(). '">Return to home</a>');
 }
-$term = get_term_by('slug', get_query_var('lesson'), get_query_var('taxonomy'));
 ?>
 <style>
 body {
@@ -26,6 +25,9 @@ body {
     color: black;
 }
 </style>
+<?php
+$term = get_term_by('slug', get_query_var('lesson'), get_query_var('taxonomy'));
+?>
 <h2>Lesson: <?php echo $term->name; ?></h2>
 <?php
     $displayCount = 1;

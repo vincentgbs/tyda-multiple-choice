@@ -4,7 +4,7 @@
  */
 $user = wp_get_current_user();
 if (!is_user_logged_in() || !in_array('student', (array) $user->roles)) {
-    die('Only students can view the material');
+    die('Only students can view material <a href="' . site_url(). '">Return to home</a>');
 }
 ?>
 <style>
@@ -43,7 +43,6 @@ body {
     background-color: IndianRed;
 }
 .continue_button {
-    display: none;
     background-color: MediumTurquoise;
     width: 100%;
     height: 2.5rem;
@@ -112,6 +111,8 @@ body {
     $total = 0;
     $answered = 0;
     $questionCompleted = false;
+    $tempIndex = 0;
+    $arrayOfQuestionIds = []; /* holds all ids of question lesson in order */
     while($questionInLesson->have_posts()) {
         $questionInLesson->the_post();
         $alreadyAnswered = new WP_Query([
@@ -124,12 +125,20 @@ body {
             ]
         ]);
         $total += 1;
+        $thisQuestionAnswered = false;
         if ($alreadyAnswered->found_posts > 0) {
             $answered += 1;
-            if (get_the_ID() == $thisQuestionId) {
+            $thisQuestionAnswered = true;
+        }
+        $tempQuestionId = get_the_ID();
+        if ($tempQuestionId == $thisQuestionId) {
+            if ($thisQuestionAnswered) {
                 $questionCompleted = true; /* this question */
             }
+            $indexOfThisQuestion = $tempIndex;
         }
+        $arrayOfQuestionIds[] = $tempQuestionId;
+        $tempIndex += 1;
     }
     wp_reset_postdata();
     while(have_posts()) {
@@ -177,11 +186,18 @@ body {
         </ul>
     </div>
     <div id="questions_footer">
-        <?php if (get_field('next_question') != '') { ?>
+        <?php if (get_field('next_question') == 'none') { ?>
+            <a href="<?php echo site_url('/archives/lessons/') . $lessonName; ?>" class="dull_link"><div class="continue_button">⇦</div></a>
+        <?php } else if (get_field('next_question') != '') { ?>
         <a href="<?php echo site_url('/archives/question/') . get_field('next_question'); ?>" class="dull_link">
-            <div class="continue_button">Next Question</div></a>
-        <?php } else { ?>
-            <a href="<?php echo site_url('/archives/lessons/') . $lessonName; ?>" class="dull_link"><div class="continue_button">Return to Lesson</div></a>
+            <div class="continue_button">⇨</div>
+        </a>
+        <?php } else {
+            $nextQuestion = $arrayOfQuestionIds[$indexOfThisQuestion + 1];
+        ?>
+            <a href="<?php echo site_url('/archives/question/') . $nextQuestion; ?>" class="dull_link">
+                <div class="continue_button">⇨</div>
+            </a>
         <?php } /* end else(get_field('next_question') != '') */
         } /* end while(have_posts()) */
         ?>
@@ -244,11 +260,6 @@ var question = {
         }
     }, /* end answerQuestion() */
     pause: false,
-    goToNextQuestion: function() {
-        if (document.querySelector('.continue_button')) {
-            document.querySelector('.continue_button').style.display = 'block';
-        }
-    }, /* end goToNextQuestion() */
     decrementAttemptsRemaining: function() {
         let attempts = document.querySelector('#attempts_remaining_container');
         document.querySelector('#made_attempts').value = (1 + parseInt(document.querySelector('#made_attempts').value));
@@ -294,10 +305,6 @@ document.addEventListener("DOMContentLoaded", function() {
             question.answerQuestion(this);
         });
     });
-    /* question has already been answered */
-    if (document.querySelector('.correct')) {
-        question.goToNextQuestion();
-    }
     question.show_question_status();
     question.show_attempt_status();
 });
