@@ -7,28 +7,28 @@ if (!is_user_logged_in() || !in_array('student', (array) $user->roles)) {
     die('Only students can view material <a href="' . site_url() . '/wp-login.php">Return to home</a>');
 }
 
-function getContinueUrl($dataArray) {
-    $field = $dataArray['field'];
-    $lessonName = $dataArray['lessonName'];
-    $arrayOfQuestionIds = $dataArray['arrayOfQuestionIds'];
-    if (get_field($field) == 'none') {
-        return site_url('/archives/lessons/') . $lessonName;
-    } else if (get_field($field) != '') {
-        return site_url('/archives/question/') . get_field('next_question');
-    } else {
-        if ($field == 'next_question') {
-            //
-        } else if ($field == 'previous_question') {
-            if ($indexOfThisQuestion - 1 < 0) {
-                $continueQuestion = $arrayOfQuestionIds[count($arrayOfQuestionIds) - 1];
-                $prevLink = site_url('/archives/question/') . $continueQuestion;
-            } else {
-                $continueQuestion = $arrayOfQuestionIds[($indexOfThisQuestion - 1) % count($arrayOfQuestionIds)];
-                $prevLink = site_url('/archives/question/') . $continueQuestion;
-            }
-        }
-    }
-}
+// function getContinueUrl($dataArray) {
+//     $field = $dataArray['field'];
+//     $lessonName = $dataArray['lessonName'];
+//     $arrayOfQuestionIds = $dataArray['arrayOfQuestionIds'];
+//     if (get_field($field) == 'none') {
+//         return site_url('/archives/lessons/') . $lessonName;
+//     } else if (get_field($field) != '') {
+//         return site_url('/archives/question/') . get_field('next_question');
+//     } else {
+//         if ($field == 'next_question') {
+//             //
+//         } else if ($field == 'previous_question') {
+//             if ($indexOfThisQuestion - 1 < 0) {
+//                 $continueQuestion = $arrayOfQuestionIds[count($arrayOfQuestionIds) - 1];
+//                 $prevLink = site_url('/archives/question/') . $continueQuestion;
+//             } else {
+//                 $continueQuestion = $arrayOfQuestionIds[($indexOfThisQuestion - 1) % count($arrayOfQuestionIds)];
+//                 $prevLink = site_url('/archives/question/') . $continueQuestion;
+//             }
+//         }
+//     }
+// }
 
 ?>
 <style>
@@ -85,7 +85,11 @@ body {
     display: flex;
     height: 2.5rem;
 }
+#return_to_lesson {
+    font-size: 2rem;
+}
 #questions_remaining_container {
+    display: flex;
     width: 60%;
 }
 #attempts_remaining_container {
@@ -177,8 +181,9 @@ body {
         <input type="hidden" id="total_attempts"
             value="<?php echo QUESTIONS_MAX_WRONG; ?>" />
         <div id="questions_remaining_container">
-            <a href="<?php echo site_url('/archives/lessons/') . $lessonName; ?>" class="dull_link"><div id="questions_remaining"></div></a>
-            ↺
+            <a href="<?php echo site_url('/archives/lessons/') . $lessonName; ?>"
+                id="return_to_lesson" class="dull_link">↺</a>
+            <div id="questions_remaining"></div>
         </div>
         <div id="attempts_remaining_container"></div>
         <div id="close_container">
