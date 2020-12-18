@@ -82,21 +82,27 @@ body {
 }
 
 #questions_header {
-    display: flex;
+    min-height: 2.5rem;
+}
+#questions_header .top_row {
     height: 2.5rem;
-}
-#return_to_lesson {
-    font-size: 2rem;
-}
-#questions_remaining_container {
     display: flex;
+}
+#questions_header .bottom_row {
+    padding: 0 2.5rem;
+}
+#lesson_name_container {
+    margin-left: 5rem;
     width: 60%;
 }
 #attempts_remaining_container {
     width: 30%;
 }
+#attempts_remaining_container span {
+    float: right;
+}
 #close_container {
-    min-with: 12.5%;
+    min-width: 12.5%;
 }
 #close {
     float: right;
@@ -104,6 +110,9 @@ body {
     border-radius: 2.5rem;
     height: 2.5rem;
     width: 2.5rem;
+}
+#questions_remaining_container {
+    width: 100%;
 }
 #questions_content {
     background-color: MintCream;
@@ -172,22 +181,27 @@ body {
 <div id="flashMessage"></div>
 <div id="questions_body">
     <div id="questions_header">
-        <input type="hidden" id="completed_questions_in_lesson"
-            value="<?php echo $answered; ?>" />
-        <input type="hidden" id="total_questions_in_lesson"
-            value="<?php echo $total; ?>" />
-        <input type="hidden" id="made_attempts"
-            value="<?php echo $cramGuard->found_posts; ?>" />
-        <input type="hidden" id="total_attempts"
-            value="<?php echo QUESTIONS_MAX_WRONG; ?>" />
-        <div id="questions_remaining_container">
-            <a href="<?php echo site_url('/archives/lessons/') . $lessonName; ?>"
-                id="return_to_lesson" class="dull_link">↺</a>
-            <div id="questions_remaining"></div>
+        <div class="top_row">
+            <input type="hidden" id="completed_questions_in_lesson"
+                value="<?php echo $answered; ?>" />
+            <input type="hidden" id="total_questions_in_lesson"
+                value="<?php echo $total; ?>" />
+            <input type="hidden" id="made_attempts"
+                value="<?php echo $cramGuard->found_posts; ?>" />
+            <input type="hidden" id="total_attempts"
+                value="<?php echo QUESTIONS_MAX_WRONG; ?>" />
+            <div id="lesson_name_container"><?php echo ucfirst($lessonName);
+            ?></div>
+            <div id="attempts_remaining_container"></div>
+            <div id="close_container">
+                <a href="<?php echo site_url('/archives/lessons/') . $lessonName; ?>"
+                    class="dull_link"><button id="close">✖</button></a>
+            </div>
         </div>
-        <div id="attempts_remaining_container"></div>
-        <div id="close_container">
-            <a href="#" class="dull_link"><button id="close">X</button></a>
+        <div class="bottom_row">
+            <div id="questions_remaining_container">
+                <div id="questions_remaining"></div>
+            </div>
         </div>
     </div>
     <div id="questions_content">
