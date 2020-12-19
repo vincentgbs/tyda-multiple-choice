@@ -7,6 +7,26 @@ if (!is_user_logged_in() || !in_array('student', (array) $user->roles)) {
     die('Only students can view material <a href="' . site_url() . '/wp-login.php">Return to home</a>');
 }
 
+function getContinueUrl($dataArray) {
+    $arrayOfQuestionIds = $dataArray['arrayOfQuestionIds'];
+    $indexOfThisQuestion = $dataArray['indexOfThisQuestion'];
+    if (get_field($dataArray['field']) == 'none') {
+        return site_url('/archives/lessons/') . $dataArray['lessonName'];
+    } else if (get_field($dataArray['field']) != '') {
+        return site_url('/archives/question/') . get_field($dataArray['field']);
+    } else {
+        if ($dataArray['field'] == 'previous_question') {
+            $continueQuestionIndex = (count($arrayOfQuestionIds) + $indexOfThisQuestion - 1) % count($arrayOfQuestionIds);
+            $continueQuestion = $arrayOfQuestionIds[$continueQuestionIndex];
+            return site_url('/archives/question/') . $continueQuestion;
+        } else if ($dataArray['field'] == 'next_question') {
+            $continueQuestionIndex = ($indexOfThisQuestion + 1) % count($arrayOfQuestionIds);
+            $continueQuestion = $arrayOfQuestionIds[$continueQuestionIndex];
+            return site_url('/archives/question/') . $continueQuestion;
+        }
+    }
+}
+
 $thisQuestionId = get_the_ID();
 $terms = get_the_terms($thisQuestionId, 'lesson');
 $lessonName = $terms[0]->slug;
@@ -50,28 +70,18 @@ while(have_posts()) {
     the_post();
     $keys = ['option1', 'option2', 'option3', 'answer'];
     shuffle($keys);
-
-    if (get_field('next_question') == 'none') {
-        $nextLink = site_url('/archives/lessons/') . $lessonName;
-    } else if (get_field('next_question') != '') {
-        $nextLink = site_url('/archives/question/') . get_field('next_question');
-    } else {
-        $nextQuestion = $arrayOfQuestionIds[($indexOfThisQuestion + 1) % count($arrayOfQuestionIds)];
-        $nextLink = site_url('/archives/question/') . $nextQuestion;
-    } /* end else(get_field('next_question') != '') */
-    if (get_field('previous_question') == 'none') {
-        $prevLink = site_url('/archives/lessons/') . $lessonName;
-    } else if (get_field('previous_question') != '') {
-        $prevLink = site_url('/archives/question/') . get_field('next_question');
-    } else {
-        if ($indexOfThisQuestion - 1 < 0) {
-            $lastQuestion = $arrayOfQuestionIds[count($arrayOfQuestionIds) - 1];
-            $prevLink = site_url('/archives/question/') . $lastQuestion;
-        } else {
-            $lastQuestion = $arrayOfQuestionIds[$indexOfThisQuestion - 1];
-            $prevLink = site_url('/archives/question/') . $lastQuestion;
-        }
-    } /* end else(get_field('previous_question') != '') */
+    $nextLink = getContinueUrl([
+        'field'=>'next_question',
+        'lessonName'=>$lessonName,
+        'arrayOfQuestionIds'=>$arrayOfQuestionIds,
+        'indexOfThisQuestion'=>$indexOfThisQuestion,
+    ]);
+    $prevLink = getContinueUrl([
+        'field'=>'previous_question',
+        'lessonName'=>$lessonName,
+        'arrayOfQuestionIds'=>$arrayOfQuestionIds,
+        'indexOfThisQuestion'=>$indexOfThisQuestion,
+    ]);
 ?>
 <style>
 body {
