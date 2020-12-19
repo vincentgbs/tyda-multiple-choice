@@ -48,6 +48,30 @@ while($questionInLesson->have_posts()) {
 wp_reset_postdata();
 while(have_posts()) {
     the_post();
+    $keys = ['option1', 'option2', 'option3', 'answer'];
+    shuffle($keys);
+
+    if (get_field('next_question') == 'none') {
+        $nextLink = site_url('/archives/lessons/') . $lessonName;
+    } else if (get_field('next_question') != '') {
+        $nextLink = site_url('/archives/question/') . get_field('next_question');
+    } else {
+        $nextQuestion = $arrayOfQuestionIds[($indexOfThisQuestion + 1) % count($arrayOfQuestionIds)];
+        $nextLink = site_url('/archives/question/') . $nextQuestion;
+    } /* end else(get_field('next_question') != '') */
+    if (get_field('previous_question') == 'none') {
+        $prevLink = site_url('/archives/lessons/') . $lessonName;
+    } else if (get_field('previous_question') != '') {
+        $prevLink = site_url('/archives/question/') . get_field('next_question');
+    } else {
+        if ($indexOfThisQuestion - 1 < 0) {
+            $lastQuestion = $arrayOfQuestionIds[count($arrayOfQuestionIds) - 1];
+            $prevLink = site_url('/archives/question/') . $lastQuestion;
+        } else {
+            $lastQuestion = $arrayOfQuestionIds[$indexOfThisQuestion - 1];
+            $prevLink = site_url('/archives/question/') . $lastQuestion;
+        }
+    } /* end else(get_field('previous_question') != '') */
 ?>
 <style>
 body {
@@ -176,8 +200,6 @@ body {
     <div id="questions_options">
         <div class="question_options_list">
             <?php
-                $keys = ['option1', 'option2', 'option3', 'answer'];
-                shuffle($keys);
                 foreach ($keys as $key=>$value) {
                     if(get_field($value)) {
             ?>
@@ -192,34 +214,11 @@ body {
         </div>
     </div>
     <div id="questions_footer">
-        <?php
-            if (get_field('next_question') == 'none') {
-                $nextLink = site_url('/archives/lessons/') . $lessonName;
-            } else if (get_field('next_question') != '') {
-                $nextLink = site_url('/archives/question/') . get_field('next_question');
-            } else {
-                $nextQuestion = $arrayOfQuestionIds[($indexOfThisQuestion + 1) % count($arrayOfQuestionIds)];
-                $nextLink = site_url('/archives/question/') . $nextQuestion;
-            } /* end else(get_field('next_question') != '') */
-            if (get_field('previous_question') == 'none') {
-                $prevLink = site_url('/archives/lessons/') . $lessonName;
-            } else if (get_field('previous_question') != '') {
-                $prevLink = site_url('/archives/question/') . get_field('next_question');
-            } else {
-                if ($indexOfThisQuestion - 1 < 0) {
-                    $lastQuestion = $arrayOfQuestionIds[count($arrayOfQuestionIds) - 1];
-                    $prevLink = site_url('/archives/question/') . $lastQuestion;
-                } else {
-                    $lastQuestion = $arrayOfQuestionIds[$indexOfThisQuestion - 1];
-                    $prevLink = site_url('/archives/question/') . $lastQuestion;
-                }
-            } /* end else(get_field('previous_question') != '') */
-        } /* end while(have_posts()) */
-        ?>
         <div class="continue_button"><a href="<?php echo $prevLink; ?>" class="dull_link"><div>⇦</div></a></div>
         <div class="continue_button"><a href="<?php echo $nextLink; ?>" class="dull_link"><div>⇨</div></a></div>
     </div>
-</div>
+<?php } /* end while(have_posts()) */ ?>
+</div> <!-- <div id="questions_body"> -->
 
 <script>
 var question = {
