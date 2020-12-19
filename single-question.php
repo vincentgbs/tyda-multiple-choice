@@ -42,17 +42,17 @@ $questionInLesson = new WP_Query([
     'orderby' => 'meta_value_num',
     'order' => 'ASC',
 ]);
-$total = 0;
-$answered = 0;
+$totalQUestions = 0;
+$answeredQuestions = 0;
 $questionCompleted = false;
 $tempIndex = 0;
 $arrayOfQuestionIds = []; /* holds all ids of question lesson in order */
 while($questionInLesson->have_posts()) {
     $questionInLesson->the_post();
-    $total += 1;
+    $totalQUestions += 1;
     $thisQuestionAnswered = false;
     if (alreadyAnswered(get_the_ID())) {
-        $answered += 1;
+        $answeredQuestions += 1;
         $thisQuestionAnswered = true;
     }
     $tempQuestionId = get_the_ID();
@@ -183,9 +183,9 @@ body {
     <div id="questions_header">
         <div class="top_row">
             <input type="hidden" id="completed_questions_in_lesson"
-                value="<?php echo $answered; ?>" />
+                value="<?php echo $answeredQuestions; ?>" />
             <input type="hidden" id="total_questions_in_lesson"
-                value="<?php echo $total; ?>" />
+                value="<?php echo $totalQUestions; ?>" />
             <input type="hidden" id="made_attempts"
                 value="<?php echo getAttempts(); ?>" />
             <input type="hidden" id="total_attempts"
