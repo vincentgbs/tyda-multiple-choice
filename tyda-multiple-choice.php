@@ -202,6 +202,8 @@ function question_page_template($template) {
 
 add_filter('template_include', 'lesson_taxonomy_template');
 function calculateLessonDates($dataArray) {
+    /* start_date is stored in parent lesson */
+    $start = get_field('start_date', get_term($dataArray['lesson']->parent, 'lesson'));
     if ($dataArray['open'] == '') {
         $dataArray['open'] = 0; /* default */
     }
@@ -209,9 +211,9 @@ function calculateLessonDates($dataArray) {
         $dataArray['due'] = 52; /* default */
     }
     $now = new DateTime('now');
-    $open = date_add(new DateTime($dataArray['start']),
+    $open = date_add(new DateTime($start),
         date_interval_create_from_date_string("{$dataArray['open']} weeks"));
-    $due = date_add(new DateTime($dataArray['start']),
+    $due = date_add(new DateTime($start),
         date_interval_create_from_date_string("{$dataArray['due']} weeks"));
     if ($now >= $open && $now <= $due) {
         $status = 'open';

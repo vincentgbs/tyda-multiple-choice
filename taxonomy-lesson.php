@@ -39,11 +39,9 @@ if (!is_user_logged_in() || !in_array('student', (array)$user->roles)) {
     </style>
 </head>
 <?php
-    $start = "2020-12-01"; /* need to pull from database */
     $lessonObject = get_queried_object();
     $dates = calculateLessonDates([
         'lesson'=>$lessonObject,
-        'start'=>$start,
         'open'=>get_field('week_open', $lessonObject),
         'due'=>get_field('week_due', $lessonObject),
     ]);
