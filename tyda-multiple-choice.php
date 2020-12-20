@@ -201,9 +201,17 @@ function question_page_template($template) {
 }
 
 add_filter('template_include', 'lesson_taxonomy_template');
+function getRootParent($term, $taxonomy) {
+    $parent = get_term($term, $taxonomy);
+    while ($parent->parent != '0') {
+        $term_id = $parent->parent;
+        $parent = get_term($term_id, $taxonomy);
+    }
+    return $parent;
+}
 function calculateLessonDates($dataArray) {
     /* start_date is stored in parent lesson */
-    $start = get_field('start_date', get_term($dataArray['lesson']->parent, 'lesson'));
+    $start = get_field('start_date', getRootParent($dataArray['lesson'], 'lesson'));
     if ($dataArray['open'] == '') {
         $dataArray['open'] = 0; /* default */
     }
