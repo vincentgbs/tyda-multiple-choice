@@ -90,7 +90,7 @@ $lessonData = getLessonData([
 while(have_posts()) {
     the_post();
     $keys = ['option1', 'option2', 'option3', 'answer'];
-    shuffle($keys);
+    shuffle($keys); /* randomize order of question_options */
     $nextLink = getContinueUrl([
         'field'=>'next_question',
         'lessonName'=>$lessonSlug,
@@ -164,28 +164,34 @@ while(have_posts()) {
         height: 2.5rem;
         display: flex;
     }
-    #questions_header_bottom_row {
-        padding: 0 2.5rem;
-    }
     #lesson_name_container {
-        margin-left: 5rem;
-        width: 60%;
+        float: left;
+        width: 75%;
+        padding-left: 25%;
     }
     #attempts_remaining_container {
-        width: 30%;
+        margin-left: auto; /* like-float: right */
+        min-width: 25%;
     }
     #attempts_remaining_container span {
         float: right;
     }
     #close_container {
-        min-width: 12.5%;
+        margin-left: auto; /* like-float: right */
+        min-width: 3rem;
     }
-    #close {
+    #close_button {
         float: right;
         background-color: MediumTurquoise;
         border-radius: 2.5rem;
         height: 2.5rem;
         width: 2.5rem;
+    }
+    #questions_header_bottom_row {
+        padding: .2rem 2.5rem;
+    }
+    #questions_remaining {
+        font-size: 1.5rem;
     }
     #questions_content {
         background-color: MintCream;
@@ -199,10 +205,10 @@ while(have_posts()) {
     }
     </style>
 </head>
-<div id="flashMessage"></div>
-<div id="questions_body">
-    <div id="questions_header">
-        <div id="questions_header_top_row">
+<body>
+    <div id="flashMessage"></div>
+    <div id="questions_body">
+        <div id="questions_header">
             <input type="hidden" id="completed_questions"
                 value="<?php echo $lessonData['completedQuestions']; ?>" />
             <input type="hidden" id="total_questions"
@@ -211,46 +217,52 @@ while(have_posts()) {
                 value="<?php echo getAttempts(); ?>" />
             <input type="hidden" id="total_attempts_allowed"
                 value="<?php echo QUESTIONS_MAX_WRONG; ?>" />
-            <div id="lesson_name_container"><?php echo ucfirst($lessonSlug);
-            ?></div>
-            <div id="attempts_remaining_container"></div>
-            <div id="close_container">
-                <a href="<?php echo site_url('/archives/lessons/') . $lessonSlug; ?>"
-                    class="dull_link"><button id="close">✖</button></a>
+            <div id="questions_header_top_row">
+                <div id="lesson_name_container">
+                    <?php echo ucfirst($lessonSlug); ?>
+                </div>
+                <div id="attempts_remaining_container"></div>
+                <div id="close_container">
+                    <a href="<?php echo site_url('/archives/lessons/') . $lessonSlug; ?>"
+                        class="dull_link"><button id="close_button">✖</button></a>
+                </div>
+            </div>
+            <div id="questions_header_bottom_row">
+                <div id="questions_remaining"></div>
             </div>
         </div>
-        <div id="questions_header_bottom_row">
-            <div id="questions_remaining"></div>
+        <div id="questions_content">
+            <?php the_content(); ?>
         </div>
-    </div>
-    <div id="questions_content">
-        <p><?php the_content(); ?></p>
-    </div>
-    <div id="questions_options">
-        <div>
+        <div id="questions_options">
+            <div>
             <?php
-                foreach ($keys as $key=>$value) {
-                    if(get_field($value)) {
+                foreach ($keys as $index=>$key) {
+                    if(get_field($key)) {
             ?>
                     <div class="question_option<?php
-                        if ($lessonData['thisQuestionCompleted'] && $value == 'answer')
-                            { echo ' correct'; }
-                    ?>"><?php echo get_field($value); ?></div>
+                        if ($lessonData['thisQuestionCompleted'] && $key == 'answer') {
+                            echo ' correct';
+                        } ?>"><?php echo get_field($key); ?></div>
             <?php
-                    }
-                } /* end foreach */
+                    } /* end if(get_field($key)) */
+                } /* end foreach (question_option) */
             ?>
+            </div>
         </div>
-    </div>
-    <div id="questions_footer">
-        <div class="continue_button"><a href="<?php echo $prevLink; ?>" class="dull_link"><div>⇦</div></a></div>
-        <div class="continue_button"><a href="<?php echo $nextLink; ?>" class="dull_link"><div>⇨</div></a></div>
-    </div>
-<?php } /* end while(have_posts()) */ ?>
-</div> <!-- <div id="questions_body"> -->
+        <div id="questions_footer">
+            <div class="continue_button"><a href="<?php echo $prevLink; ?>" class="dull_link"><div>⇦</div></a></div>
+            <div class="continue_button"><a href="<?php echo $nextLink; ?>" class="dull_link"><div>⇨</div></a></div>
+        </div>
+    <?php } /* end while(have_posts()) */ ?>
+    </div> <!-- <div id="questions_body"> -->
+    <!-- <input type="hidden" id="root_url" value="<?php echo get_site_url(); ?>"> -->
+    <!-- <input type="hidden" id="nonce" value="<?php echo wp_create_nonce('wp_rest'); ?>"> -->
+    <!-- <input type="hidden" id="questionId" value="<?php echo $thisQuestionId; ?>"> -->
 </body>
 <script>
 var question = {
+    pause: false,
     encodeJsonData: function(object) {
         let array = [];
         Object.keys(object).forEach(key =>
@@ -260,7 +272,7 @@ var question = {
         );
         return array.join("&");
     }, /* end encodeJsonData() */
-    flashMessage: function(message, timer=2500) {
+    flashMessage: function(message, timer=1000) {
         if (document.querySelector("#flashMessage")) {
             let div = document.querySelector("#flashMessage");
             div.innerText = message;
@@ -269,22 +281,24 @@ var question = {
                 div.innerText = '';
                 div.style.display = 'none';
             }, timer);
+        } else {
+            console.debug(message);
         }
     }, /* end flashMessage() */
     answerQuestion: function(answer) {
         if (question.pause) {
-            question.flashMessage('loading', 999);
+            question.flashMessage('loading...');
         } else {
             question.pause = true;
             let xhr = new XMLHttpRequest();
-            xhr.open('POST', '<?php echo get_site_url(); ?>' + '/wp-json/university/v1/answer');
+            xhr.open('POST', '<?php echo get_site_url(); ?>'+'/wp-json/university/v1/answer');
             xhr.setRequestHeader('X-WP-Nonce', '<?php echo wp_create_nonce('wp_rest'); ?>');
             xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
             xhr.onload = function () {
                 try {
                     let response = JSON.parse(xhr.response);
                     if (response['status'] == 'Done') {
-                        console.log('Done'); // continue
+                        console.log('Done');
                     } else if (response['status'] == 'Correct') {
                         answer.classList.add('correct');
                         // question.incrementQuestionsAnswered();
@@ -300,8 +314,8 @@ var question = {
             }; /* end xhr.onload */
             try {
                 let request = question.encodeJsonData({
-                    questionId: <?php echo get_the_ID(); ?>,
-                    answer: answer.innerText
+                    questionId: <?php echo $thisQuestionId; ?>,
+                    answer: answer.innerText,
                 });
                 xhr.send(request);
             } catch (err) {
@@ -309,7 +323,18 @@ var question = {
             }
         }
     }, /* end answerQuestion() */
-    pause: false,
+    incrementQuestionsAnswered: function() {
+        let questions = document.querySelector('#questions_remaining');
+        document.querySelector('#completed_questions').value = (1 + parseInt(document.querySelector('#completed_questions').value));
+        questions.style.color = 'lightgreen';
+        setTimeout(function() {
+            question.show_question_status();
+            setTimeout(function() {
+                question.pause = false;
+                questions.style.color = 'black';
+            }, 999);
+        }, 999);
+    },
     decrementAttemptsRemaining: function() {
         let attempts = document.querySelector('#attempts_remaining_container');
         document.querySelector('#attempts_made').value = (1 + parseInt(document.querySelector('#attempts_made').value));
@@ -344,7 +369,7 @@ var question = {
         }
         display.innerHTML = html;
     },
-}; /* end question var */
+}; /* end question variable */
 
 document.addEventListener("DOMContentLoaded", function() {
     let options = document.querySelectorAll('.question_option');
