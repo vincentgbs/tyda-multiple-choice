@@ -115,21 +115,9 @@ while(have_posts()) {
         background-color: LightCyan;
         font-family: Arial, Helvetica, sans-serif;
     }
-    #flashMessage {
-        text-align: center;
-        font-size: 2rem;
-        position: fixed;
-        z-index: 2;
-        display: none;
-        min-width: 50%;
-        height: 3rem;
-        top: 10%;
-        left: 10%;
-        background-color: rgba(0,0,0,0.3);
-    }
-
-    .question_options_list {
-        list-style-type: none;
+    .dull_link {
+        text-decoration: none;
+        color: black;
     }
     .question_option {
         background-color: MintCream;
@@ -156,19 +144,27 @@ while(have_posts()) {
         text-align: center;
         padding-top: 1rem;
     }
-    .dull_link {
-        text-decoration: none;
-        color: black;
-    }
 
+    #flashMessage {
+        text-align: center;
+        font-size: 2rem;
+        position: fixed;
+        z-index: 2;
+        display: none;
+        min-width: 50%;
+        height: 3rem;
+        top: 10%;
+        left: 10%;
+        background-color: rgba(0,0,0,0.3);
+    }
     #questions_header {
         min-height: 2.5rem;
     }
-    #questions_header .top_row {
+    #questions_header_top_row {
         height: 2.5rem;
         display: flex;
     }
-    #questions_header .bottom_row {
+    #questions_header_bottom_row {
         padding: 0 2.5rem;
     }
     #lesson_name_container {
@@ -209,7 +205,7 @@ while(have_posts()) {
 <div id="flashMessage"></div>
 <div id="questions_body">
     <div id="questions_header">
-        <div class="top_row">
+        <div id="questions_header_top_row">
             <input type="hidden" id="completed_questions_in_lesson"
                 value="<?php echo $lessonData['completedQuestions']; ?>" />
             <input type="hidden" id="total_questions_in_lesson"
@@ -226,7 +222,7 @@ while(have_posts()) {
                     class="dull_link"><button id="close">✖</button></a>
             </div>
         </div>
-        <div class="bottom_row">
+        <div id="questions_header_bottom_row">
             <div id="questions_remaining_container">
                 <div id="questions_remaining"></div>
             </div>
@@ -236,7 +232,7 @@ while(have_posts()) {
         <p><?php the_content(); ?></p>
     </div>
     <div id="questions_options">
-        <div class="question_options_list">
+        <div>
             <?php
                 foreach ($keys as $key=>$value) {
                     if(get_field($value)) {
@@ -257,7 +253,7 @@ while(have_posts()) {
     </div>
 <?php } /* end while(have_posts()) */ ?>
 </div> <!-- <div id="questions_body"> -->
-
+</body>
 <script>
 var question = {
     encodeJsonData: function(object) {
@@ -366,3 +362,4 @@ document.addEventListener("DOMContentLoaded", function() {
     question.show_attempt_status();
 });
 </script>
+</html>
