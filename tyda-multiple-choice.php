@@ -2,7 +2,7 @@
 /*
   Plugin Name: Tyda Multiple Choice Plugin
   Plugin URI: https://github.com/vincentgbs/tyda-multiple-choice
-  Description: This plugin requires the advanced-custom-fields plugin. The 'question' post needs subfields: 'option1', 'option2', 'option3', 'answer', 'next_question', 'previous_question'. You can optionally add the 'question_id' to the 'correct' and 'wrong' post types to track them in the backend. The members plugin is needed to add the 'student', 'alumni', 'teacher' roles.
+  Description: This plugin requires the advanced-custom-fields plugin and the members plugin. This is a simple lesson creator with multiple choice answers.
   Version: 0.1
   Author: Vincent Hu
   Author URI: https://www.vincenthu.dev
