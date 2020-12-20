@@ -55,21 +55,23 @@ function getLessonData($dataArray) {
 }
 
 function getContinueUrl($dataArray) {
-    $lessonQuestionIds = $dataArray['arrayOfQuestionIds'];
-    $indexOfThisQuestion = $dataArray['indexOfThisQuestion'];
+    $qIds = $dataArray['arrayOfQuestionIds'];
+    $qIndex = $dataArray['indexOfThisQuestion'];
     if (get_field($dataArray['field']) == 'none') {
         return site_url('/archives/lessons/') . $dataArray['lessonName'];
     } else if (get_field($dataArray['field']) != '') {
         return site_url('/archives/question/') . get_field($dataArray['field']);
     } else {
         if ($dataArray['field'] == 'previous_question') {
-            $continueQuestionIndex = (count($lessonQuestionIds) + $indexOfThisQuestion - 1) % count($lessonQuestionIds);
-            $continueQuestion = $lessonQuestionIds[$continueQuestionIndex];
+            $continueQuestionIndex = (count($qIds) + $qIndex - 1) % count($qIds);
+            $continueQuestion = $qIds[$continueQuestionIndex];
             return site_url('/archives/question/') . $continueQuestion;
         } else if ($dataArray['field'] == 'next_question') {
-            $continueQuestionIndex = ($indexOfThisQuestion + 1) % count($lessonQuestionIds);
-            $continueQuestion = $lessonQuestionIds[$continueQuestionIndex];
+            $continueQuestionIndex = ($qIndex + 1) % count($qIds);
+            $continueQuestion = $qIds[$continueQuestionIndex];
             return site_url('/archives/question/') . $continueQuestion;
+        } else {
+            return '#';
         }
     }
 }
@@ -102,101 +104,108 @@ while(have_posts()) {
         'indexOfThisQuestion'=>$lessonData['indexOfThisQuestion'],
     ]);
 ?>
-<style>
-body {
-    background-color: LightCyan;
-    font-family: Arial, Helvetica, sans-serif;
-}
-#flashMessage {
-    text-align: center;
-    font-size: 2rem;
-    position: fixed;
-    z-index: 2;
-    display: none;
-    min-width: 50%;
-    height: 3rem;
-    top: 10%;
-    left: 10%;
-    background-color: rgba(0,0,0,0.3);
-}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" <?php language_attributes(); ?>>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title><?php echo ucfirst($lessonSlug); ?></title>
+    <style>
+    body {
+        background-color: LightCyan;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+    #flashMessage {
+        text-align: center;
+        font-size: 2rem;
+        position: fixed;
+        z-index: 2;
+        display: none;
+        min-width: 50%;
+        height: 3rem;
+        top: 10%;
+        left: 10%;
+        background-color: rgba(0,0,0,0.3);
+    }
 
-.question_options_list {
-    list-style-type: none;
-}
-.question_option {
-    background-color: MintCream;
-    margin: .2rem 0;
-    padding: 1rem;
-    border-style: solid;
-    border-width: thin;
-    border-radius: 1rem;
-    text-align: center;
-}
-.correct {
-    background-color: MediumSeaGreen;
-}
-.wrong {
-    background-color: IndianRed;
-}
-.continue_button {
-    background-color: MediumTurquoise;
-    width: 49%;
-    height: 2.5rem;
-    border-style: solid;
-    border-width: thin;
-    border-radius: 1rem;
-    text-align: center;
-    padding-top: 1rem;
-}
-.dull_link {
-    text-decoration: none;
-    color: black;
-}
+    .question_options_list {
+        list-style-type: none;
+    }
+    .question_option {
+        background-color: MintCream;
+        margin: .2rem 0;
+        padding: 1rem;
+        border-style: solid;
+        border-width: thin;
+        border-radius: 1rem;
+        text-align: center;
+    }
+    .correct {
+        background-color: MediumSeaGreen;
+    }
+    .wrong {
+        background-color: IndianRed;
+    }
+    .continue_button {
+        background-color: MediumTurquoise;
+        width: 49%;
+        height: 2.5rem;
+        border-style: solid;
+        border-width: thin;
+        border-radius: 1rem;
+        text-align: center;
+        padding-top: 1rem;
+    }
+    .dull_link {
+        text-decoration: none;
+        color: black;
+    }
 
-#questions_header {
-    min-height: 2.5rem;
-}
-#questions_header .top_row {
-    height: 2.5rem;
-    display: flex;
-}
-#questions_header .bottom_row {
-    padding: 0 2.5rem;
-}
-#lesson_name_container {
-    margin-left: 5rem;
-    width: 60%;
-}
-#attempts_remaining_container {
-    width: 30%;
-}
-#attempts_remaining_container span {
-    float: right;
-}
-#close_container {
-    min-width: 12.5%;
-}
-#close {
-    float: right;
-    background-color: MediumTurquoise;
-    border-radius: 2.5rem;
-    height: 2.5rem;
-    width: 2.5rem;
-}
-#questions_remaining_container {
-    width: 100%;
-}
-#questions_content {
-    background-color: MintCream;
-    border-style: inset;
-    border-width: thin;
-    border-radius: 1rem;
-    min-height: 7.5rem;
-}
-#questions_footer {
-    display: flex;
-}
-</style>
+    #questions_header {
+        min-height: 2.5rem;
+    }
+    #questions_header .top_row {
+        height: 2.5rem;
+        display: flex;
+    }
+    #questions_header .bottom_row {
+        padding: 0 2.5rem;
+    }
+    #lesson_name_container {
+        margin-left: 5rem;
+        width: 60%;
+    }
+    #attempts_remaining_container {
+        width: 30%;
+    }
+    #attempts_remaining_container span {
+        float: right;
+    }
+    #close_container {
+        min-width: 12.5%;
+    }
+    #close {
+        float: right;
+        background-color: MediumTurquoise;
+        border-radius: 2.5rem;
+        height: 2.5rem;
+        width: 2.5rem;
+    }
+    #questions_remaining_container {
+        width: 100%;
+    }
+    #questions_content {
+        background-color: MintCream;
+        border-style: inset;
+        border-width: thin;
+        border-radius: 1rem;
+        min-height: 7.5rem;
+    }
+    #questions_footer {
+        display: flex;
+    }
+    </style>
+</head>
 <div id="flashMessage"></div>
 <div id="questions_body">
     <div id="questions_header">
