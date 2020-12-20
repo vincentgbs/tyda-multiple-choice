@@ -63,13 +63,13 @@ function getContinueUrl($dataArray) {
         return site_url('/archives/question/') . get_field($dataArray['field']);
     } else {
         if ($dataArray['field'] == 'previous_question') {
-            $continueQuestionIndex = (count($qIds) + $qIndex - 1) % count($qIds);
-            $continueQuestion = $qIds[$continueQuestionIndex];
-            return site_url('/archives/question/') . $continueQuestion;
+            $continueQIndex = (count($qIds) + $qIndex - 1) % count($qIds);
+            $continueQId = $qIds[$continueQIndex];
+            return site_url('/archives/question/') . $continueQId;
         } else if ($dataArray['field'] == 'next_question') {
-            $continueQuestionIndex = ($qIndex + 1) % count($qIds);
-            $continueQuestion = $qIds[$continueQuestionIndex];
-            return site_url('/archives/question/') . $continueQuestion;
+            $continueQIndex = ($qIndex + 1) % count($qIds);
+            $continueQId = $qIds[$continueQIndex];
+            return site_url('/archives/question/') . $continueQId;
         } else {
             return '#';
         }
