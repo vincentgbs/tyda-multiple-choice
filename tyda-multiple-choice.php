@@ -100,7 +100,7 @@ function question_route() {
         'permission_callback' => '__return_true',
     ]);
 }
-function alreadyAnswered($questionId, $userId=false) {
+function getAnsweredStatus($questionId, $userId=false) {
     if (!$userId) {
         $userId = get_current_user_id();
     }
@@ -147,7 +147,7 @@ function questions_get_answer($post) {
             'message'=>'Invalid questionId: ' . $questionId
         ];
     }
-    if (alreadyAnswered($questionId)) {
+    if (getAnsweredStatus($questionId)) {
         return ['status'=>'Done', 'message'=>'Done'];
     }
     if (getAttempts() >= QUESTIONS_MAX_WRONG) {

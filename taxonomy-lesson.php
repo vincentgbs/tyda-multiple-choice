@@ -41,7 +41,7 @@ if (!is_user_logged_in() || !in_array('student', (array)$user->roles)) {
     while (have_posts()) {
         the_post();
         $displayCounter++;
-        if (alreadyAnswered(get_the_ID())) {
+        if (getAnsweredStatus(get_the_ID())) {
             $displayText = 'Completed ☑';
         } else {
             $displayText = 'Unanswered □';

@@ -30,7 +30,7 @@ function getLessonData($dataArray) {
         $questionsInLesson->the_post();
         $totalQuestions += 1;
         $thisQuestionAnswered = false;
-        if (alreadyAnswered(get_the_ID())) {
+        if (getAnsweredStatus(get_the_ID())) {
             $completedQuestions += 1;
             $thisQuestionAnswered = true;
         }
