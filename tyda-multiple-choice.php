@@ -200,6 +200,29 @@ function question_page_template($template) {
 }
 
 add_filter('template_include', 'lesson_taxonomy_template');
+function calculateLessonDates($dataArray) {
+    if ($dataArray['open'] == '') {
+        $dataArray['open'] = 0; /* default */
+    }
+    if ($dataArray['due'] == '') {
+        $dataArray['due'] = 52; /* default */
+    }
+    $now = new DateTime('now');
+    $open = date_add(new DateTime($dataArray['start']),
+        date_interval_create_from_date_string("{$dataArray['open']} weeks"));
+    $due = date_add(new DateTime($dataArray['start']),
+        date_interval_create_from_date_string("{$dataArray['due']} weeks"));
+    if ($now >= $open && $now <= $due) {
+        $status = 'open';
+    } else {
+        $status = 'close';
+    }
+    return [
+        'open'=>$open,
+        'due'=>$due,
+        'status'=>$status,
+    ];
+}
 function lesson_taxonomy_template($template) {
     $file_name = 'taxonomy-lesson.php';
     if (is_tax('lesson')) {

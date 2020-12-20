@@ -79,6 +79,16 @@ function getContinueUrl($dataArray) {
 
 $thisQuestionId = get_the_ID();
 $lessonTaxonomy = get_the_terms($thisQuestionId, 'lesson');
+$dates = calculateLessonDates([
+    'lesson'=>$lessonTaxonomy[0],
+    'start'=>'2020-12-01',
+    'open'=>get_field('week_open', $lessonTaxonomy[0]),
+    'due'=>get_field('week_due', $lessonTaxonomy[0]),
+]);
+if ($dates['status'] != 'open') {
+    die('This lesson is not available yet <br />
+        <a href="' . site_url() . '">Return home</a>');
+}
 if (isset($lessonTaxonomy[0]) && isset($lessonTaxonomy[0]->slug)) {
     $lessonSlug = $lessonTaxonomy[0]->slug;
 } else {

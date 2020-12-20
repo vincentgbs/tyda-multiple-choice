@@ -39,31 +39,7 @@ if (!is_user_logged_in() || !in_array('student', (array)$user->roles)) {
     </style>
 </head>
 <?php
-function calculateLessonDates($dataArray) {
-    if ($dataArray['open'] == '') {
-        $dataArray['open'] = 0; /* default */
-    }
-    if ($dataArray['due'] == '') {
-        $dataArray['due'] = 52; /* default */
-    }
-    $now = new DateTime('now');
-    $open = date_add(new DateTime($dataArray['start']),
-        date_interval_create_from_date_string("{$dataArray['open']} weeks"));
-    $due = date_add(new DateTime($dataArray['start']),
-        date_interval_create_from_date_string("{$dataArray['due']} weeks"));
-    if ($now >= $open && $now <= $due) {
-        $status = 'open';
-    } else {
-        $status = 'close';
-    }
-    return [
-        'open'=>$open,
-        'due'=>$due,
-        'status'=>$status,
-    ];
-}
-
-    $start = "2020-12-15"; /* need to pull from database */
+    $start = "2020-12-01"; /* need to pull from database */
     $lessonObject = get_queried_object();
     $dates = calculateLessonDates([
         'lesson'=>$lessonObject,
