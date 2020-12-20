@@ -187,9 +187,6 @@ while(have_posts()) {
         height: 2.5rem;
         width: 2.5rem;
     }
-    #questions_remaining_container {
-        width: 100%;
-    }
     #questions_content {
         background-color: MintCream;
         border-style: inset;
@@ -206,13 +203,13 @@ while(have_posts()) {
 <div id="questions_body">
     <div id="questions_header">
         <div id="questions_header_top_row">
-            <input type="hidden" id="completed_questions_in_lesson"
+            <input type="hidden" id="completed_questions"
                 value="<?php echo $lessonData['completedQuestions']; ?>" />
-            <input type="hidden" id="total_questions_in_lesson"
+            <input type="hidden" id="total_questions"
                 value="<?php echo $lessonData['totalQuestions']; ?>" />
-            <input type="hidden" id="made_attempts"
+            <input type="hidden" id="attempts_made"
                 value="<?php echo getAttempts(); ?>" />
-            <input type="hidden" id="total_attempts"
+            <input type="hidden" id="total_attempts_allowed"
                 value="<?php echo QUESTIONS_MAX_WRONG; ?>" />
             <div id="lesson_name_container"><?php echo ucfirst($lessonSlug);
             ?></div>
@@ -223,9 +220,7 @@ while(have_posts()) {
             </div>
         </div>
         <div id="questions_header_bottom_row">
-            <div id="questions_remaining_container">
-                <div id="questions_remaining"></div>
-            </div>
+            <div id="questions_remaining"></div>
         </div>
     </div>
     <div id="questions_content">
@@ -317,7 +312,7 @@ var question = {
     pause: false,
     decrementAttemptsRemaining: function() {
         let attempts = document.querySelector('#attempts_remaining_container');
-        document.querySelector('#made_attempts').value = (1 + parseInt(document.querySelector('#made_attempts').value));
+        document.querySelector('#attempts_made').value = (1 + parseInt(document.querySelector('#attempts_made').value));
         attempts.style.color = 'red';
         setTimeout(function() {
             question.show_attempt_status();
@@ -330,10 +325,10 @@ var question = {
     show_question_status: function() {
         let display = document.querySelector('#questions_remaining');
         let html = '';
-        for(let i=0; i<document.querySelector('#completed_questions_in_lesson').value; i++) {
+        for(let i=0; i<document.querySelector('#completed_questions').value; i++) {
             html += '<span>☑<span>';
         }
-        for(let i=document.querySelector('#completed_questions_in_lesson').value; i<document.querySelector('#total_questions_in_lesson').value; i++) {
+        for(let i=document.querySelector('#completed_questions').value; i<document.querySelector('#total_questions').value; i++) {
             html += '<span>□<span>';
         }
         display.innerHTML = html;
@@ -341,10 +336,10 @@ var question = {
     show_attempt_status: function() {
         let display = document.querySelector('#attempts_remaining_container');
         let html = '';
-        for(let i=0; i<document.querySelector('#made_attempts').value; i++) {
+        for(let i=0; i<document.querySelector('#attempts_made').value; i++) {
             html += '<span>ⓧ<span>';
         }
-        for(let i=document.querySelector('#made_attempts').value; i<document.querySelector('#total_attempts').value; i++) {
+        for(let i=document.querySelector('#attempts_made').value; i<document.querySelector('#total_attempts_allowed').value; i++) {
             html += '<span>ⓞ<span>';
         }
         display.innerHTML = html;
