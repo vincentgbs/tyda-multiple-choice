@@ -25,6 +25,7 @@ function getLessonData($dataArray) {
         'order' => 'ASC',
     ]);
     $tempIndex = 0;
+    $indexOfThisQuestion = false;
     $lessonQuestionIds = []; /* array of question ids in lesson */
     while($questionsInLesson->have_posts()) {
         $questionsInLesson->the_post();
