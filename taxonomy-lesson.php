@@ -39,29 +39,45 @@ if (!is_user_logged_in() || !in_array('student', (array)$user->roles)) {
     </style>
 </head>
 <?php
-    $lesson = get_queried_object();
-    $open = get_field('week_open', $lesson);
-    $due = get_field('week_due', $lesson);
-    $start = "2020-01-02"; /* need to pull from database */
-    $start = "2020-08-20"; /* need to pull from database */
-    $start = "2020-12-15"; /* need to pull from database */
+function calculateLessonDates($dataArray) {
+    if ($dataArray['open'] == '') {
+        $dataArray['open'] = 0; /* default */
+    }
+    if ($dataArray['due'] == '') {
+        $dataArray['due'] = 52; /* default */
+    }
     $now = new DateTime('now');
-    $open = date_add(new DateTime($start),
-        date_interval_create_from_date_string("{$open} weeks"));
-    $due = date_add(new DateTime($start),
-        date_interval_create_from_date_string("{$due} weeks"));
+    $open = date_add(new DateTime($dataArray['start']),
+        date_interval_create_from_date_string("{$dataArray['open']} weeks"));
+    $due = date_add(new DateTime($dataArray['start']),
+        date_interval_create_from_date_string("{$dataArray['due']} weeks"));
     if ($now >= $open && $now <= $due) {
         $status = 'open';
     } else {
         $status = 'close';
     }
+    return [
+        'open'=>$open,
+        'due'=>$due,
+        'status'=>$status,
+    ];
+}
+
+    $start = "2020-12-15"; /* need to pull from database */
+    $lessonObject = get_queried_object();
+    $dates = calculateLessonDates([
+        'lesson'=>$lessonObject,
+        'start'=>$start,
+        'open'=>get_field('week_open', $lessonObject),
+        'due'=>get_field('week_due', $lessonObject),
+    ]);
 ?>
 <body>
     <div id="lesson_body">
         <h2>Lesson: <?php echo ucfirst(get_query_var('lesson')); ?></h2>
-        <input type="hidden" id="lesson_status" value="<?php echo $status; ?>" />
-        <p>Open: <?php echo date_format($open, "Y-m-d"); ?></p>
-        <p>Due: <?php echo date_format($due, "Y-m-d"); ?></p>
+        <input type="hidden" id="lesson_status" value="<?php echo $dates['status']; ?>" />
+        <p>Open: <?php echo date_format($dates['open'], "Y-m-d"); ?></p>
+        <p>Due: <?php echo date_format($dates['due'], "Y-m-d"); ?></p>
         <?php
         $displayCounter = 0;
         while (have_posts()) {
