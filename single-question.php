@@ -312,7 +312,7 @@ var question = {
                         console.log('Done');
                     } else if (response['status'] == 'Correct') {
                         answer.classList.add('correct');
-                        // question.incrementQuestionsAnswered();
+                        question.incrementQuestionsAnswered();
                     } else if (response['status'] == 'Wrong') {
                         answer.classList.add('wrong');
                         question.decrementAttemptsRemaining();

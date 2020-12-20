@@ -160,11 +160,12 @@ function questions_get_answer($post) {
         'post_type' => 'question',
         'p' => $questionId
     ]);
-    // var_dump($getAnswer[0]);
+    /* $getAnswer->post_count == 1 */
     while($getAnswer->have_posts()) {
         $getAnswer->the_post();
         $correctAnswer = get_field('answer');
     }
+    wp_reset_postdata();
     if (isset($correctAnswer) && $correctAnswer == $answer) {
         wp_insert_post([
             'post_type' => 'correct',
