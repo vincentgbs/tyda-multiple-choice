@@ -8,8 +8,54 @@ if (!is_user_logged_in() || !in_array('student', (array)$user->roles)) {
         <a href="' . site_url() . '/wp-login.php">Login</a>');
 }
 
+function getLessonData($dataArray) {
+    $totalQuestions = 0;
+    $completedQuestions = 0;
+    $thisQuestionCompleted = false;
+    $questionsInLesson = new WP_Query([
+        'post_type' => 'question',
+        'tax_query' => array(
+            array(
+                'taxonomy' => 'lesson',
+                'field'    => 'slug',
+                'terms'    => $dataArray['lessonSlug'],
+            ),
+        ),
+        'orderby' => 'meta_value_num',
+        'order' => 'ASC',
+    ]);
+    $tempIndex = 0;
+    $lessonQuestionIds = []; /* array of question ids in lesson */
+    while($questionsInLesson->have_posts()) {
+        $questionsInLesson->the_post();
+        $totalQuestions += 1;
+        $thisQuestionAnswered = false;
+        if (alreadyAnswered(get_the_ID())) {
+            $completedQuestions += 1;
+            $thisQuestionAnswered = true;
+        }
+        $tempQuestionId = get_the_ID();
+        $lessonQuestionIds[] = $tempQuestionId;
+        if ($tempQuestionId == $dataArray['thisQuestionId']) {
+            if ($thisQuestionAnswered) {
+                $thisQuestionCompleted = true;
+            }
+            $indexOfThisQuestion = $tempIndex;
+        }
+        $tempIndex += 1;
+    }
+    wp_reset_postdata();
+    return [
+        'totalQuestions'=>$totalQuestions,
+        'completedQuestions'=>$completedQuestions,
+        'thisQuestionCompleted'=>$thisQuestionCompleted,
+        'lessonQuestionIds'=>$lessonQuestionIds,
+        'indexOfThisQuestion'=>$indexOfThisQuestion,
+    ];
+}
+
 function getContinueUrl($dataArray) {
-    $arrayOfQuestionIds = $dataArray['arrayOfQuestionIds'];
+    $lessonQuestionIds = $dataArray['arrayOfQuestionIds'];
     $indexOfThisQuestion = $dataArray['indexOfThisQuestion'];
     if (get_field($dataArray['field']) == 'none') {
         return site_url('/archives/lessons/') . $dataArray['lessonName'];
@@ -17,71 +63,43 @@ function getContinueUrl($dataArray) {
         return site_url('/archives/question/') . get_field($dataArray['field']);
     } else {
         if ($dataArray['field'] == 'previous_question') {
-            $continueQuestionIndex = (count($arrayOfQuestionIds) + $indexOfThisQuestion - 1) % count($arrayOfQuestionIds);
-            $continueQuestion = $arrayOfQuestionIds[$continueQuestionIndex];
+            $continueQuestionIndex = (count($lessonQuestionIds) + $indexOfThisQuestion - 1) % count($lessonQuestionIds);
+            $continueQuestion = $lessonQuestionIds[$continueQuestionIndex];
             return site_url('/archives/question/') . $continueQuestion;
         } else if ($dataArray['field'] == 'next_question') {
-            $continueQuestionIndex = ($indexOfThisQuestion + 1) % count($arrayOfQuestionIds);
-            $continueQuestion = $arrayOfQuestionIds[$continueQuestionIndex];
+            $continueQuestionIndex = ($indexOfThisQuestion + 1) % count($lessonQuestionIds);
+            $continueQuestion = $lessonQuestionIds[$continueQuestionIndex];
             return site_url('/archives/question/') . $continueQuestion;
         }
     }
 }
 
 $thisQuestionId = get_the_ID();
-$terms = get_the_terms($thisQuestionId, 'lesson');
-$lessonName = $terms[0]->slug;
-$questionInLesson = new WP_Query([
-    'post_type' => 'question',
-    'tax_query' => array(
-        array(
-            'taxonomy' => 'lesson',
-            'field'    => 'slug',
-            'terms'    => $lessonName,
-        ),
-    ),
-    'orderby' => 'meta_value_num',
-    'order' => 'ASC',
-]);
-$totalQUestions = 0;
-$answeredQuestions = 0;
-$questionCompleted = false;
-$tempIndex = 0;
-$arrayOfQuestionIds = []; /* holds all ids of question lesson in order */
-while($questionInLesson->have_posts()) {
-    $questionInLesson->the_post();
-    $totalQUestions += 1;
-    $thisQuestionAnswered = false;
-    if (alreadyAnswered(get_the_ID())) {
-        $answeredQuestions += 1;
-        $thisQuestionAnswered = true;
-    }
-    $tempQuestionId = get_the_ID();
-    if ($tempQuestionId == $thisQuestionId) {
-        if ($thisQuestionAnswered) {
-            $questionCompleted = true; /* this question */
-        }
-        $indexOfThisQuestion = $tempIndex;
-    }
-    $arrayOfQuestionIds[] = $tempQuestionId;
-    $tempIndex += 1;
+$lessonTaxonomy = get_the_terms($thisQuestionId, 'lesson');
+if (isset($lessonTaxonomy[0]) && isset($lessonTaxonomy[0]->slug)) {
+    $lessonSlug = $lessonTaxonomy[0]->slug;
+} else {
+    $lessonSlug = '#';
 }
-wp_reset_postdata();
+$lessonData = getLessonData([
+    'lessonSlug'=>$lessonSlug,
+    'thisQuestionId'=>$thisQuestionId,
+]);
 while(have_posts()) {
     the_post();
     $keys = ['option1', 'option2', 'option3', 'answer'];
     shuffle($keys);
     $nextLink = getContinueUrl([
         'field'=>'next_question',
-        'lessonName'=>$lessonName,
-        'arrayOfQuestionIds'=>$arrayOfQuestionIds,
-        'indexOfThisQuestion'=>$indexOfThisQuestion,
+        'lessonName'=>$lessonSlug,
+        'arrayOfQuestionIds'=>$lessonData['lessonQuestionIds'],
+        'indexOfThisQuestion'=>$lessonData['indexOfThisQuestion'],
     ]);
     $prevLink = getContinueUrl([
         'field'=>'previous_question',
-        'lessonName'=>$lessonName,
-        'arrayOfQuestionIds'=>$arrayOfQuestionIds,
-        'indexOfThisQuestion'=>$indexOfThisQuestion,
+        'lessonName'=>$lessonSlug,
+        'arrayOfQuestionIds'=>$lessonData['lessonQuestionIds'],
+        'indexOfThisQuestion'=>$lessonData['indexOfThisQuestion'],
     ]);
 ?>
 <style>
@@ -184,18 +202,18 @@ body {
     <div id="questions_header">
         <div class="top_row">
             <input type="hidden" id="completed_questions_in_lesson"
-                value="<?php echo $answeredQuestions; ?>" />
+                value="<?php echo $lessonData['completedQuestions']; ?>" />
             <input type="hidden" id="total_questions_in_lesson"
-                value="<?php echo $totalQUestions; ?>" />
+                value="<?php echo $lessonData['totalQuestions']; ?>" />
             <input type="hidden" id="made_attempts"
                 value="<?php echo getAttempts(); ?>" />
             <input type="hidden" id="total_attempts"
                 value="<?php echo QUESTIONS_MAX_WRONG; ?>" />
-            <div id="lesson_name_container"><?php echo ucfirst($lessonName);
+            <div id="lesson_name_container"><?php echo ucfirst($lessonSlug);
             ?></div>
             <div id="attempts_remaining_container"></div>
             <div id="close_container">
-                <a href="<?php echo site_url('/archives/lessons/') . $lessonName; ?>"
+                <a href="<?php echo site_url('/archives/lessons/') . $lessonSlug; ?>"
                     class="dull_link"><button id="close">✖</button></a>
             </div>
         </div>
@@ -215,7 +233,7 @@ body {
                     if(get_field($value)) {
             ?>
                     <div class="question_option<?php
-                        if ($questionCompleted && $value == 'answer')
+                        if ($lessonData['thisQuestionCompleted'] && $value == 'answer')
                             { echo ' correct'; }
                     ?>"><?php echo get_field($value); ?></div>
             <?php
@@ -329,8 +347,6 @@ var question = {
 }; /* end question var */
 
 document.addEventListener("DOMContentLoaded", function() {
-    console.debug('question.js loaded');
-    /* Add Event Listeners */
     let options = document.querySelectorAll('.question_option');
     Array.from(options).forEach(function(option) {
         option.addEventListener('click', function() {
